@@ -1,0 +1,134 @@
+<div class="container-fluid">
+  <!-- Page title with breadcrumb -->
+  <app-page-title title="Customers"></app-page-title>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-sm-4">
+              <div class="search-box me-2 mb-2 d-inline-block">
+                <div class="position-relative">
+                  <input type="text" class="form-control" id="searchBox" placeholder="Search..." [(ngModel)]="term" (input)="filterCustomers()" />
+                  <i class="bx bx-search-alt search-icon"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-8">
+              <div class="text-sm-end">
+                <button type="button" class="btn btn-success btn-rounded mb-2 me-2" (click)="openModal(content)">
+                  <i class="mdi mdi-plus me-1"></i> New Customer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer table -->
+          <div class="table-responsive" style="
+    height: 100%;">
+            <table class="table align-middle table-nowrap dt-responsive nowrap w-100" id="customerList-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nom d'utilisateur</th>
+                  <th>Email</th>
+                  <th>Téléphone </th>
+                  <th>Adresse </th>
+                  <th>Dette restante</th>
+                  <th>Totales de Commandes </th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let customer of customers; let i = index" id="c_{{ customer.id }}">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ customer.name }}</td>
+                  <td>{{ customer.email }}</td>
+                  <td>{{ customer.tele }}</td>
+                  <td>{{ customer.localisation }}</td>
+                  <td>{{ customer.remainingDebt}} MAD</td>
+                  <td style="text-align: center; font-weight: bold;">{{ customer.totalOrders }}</td>
+
+                  <td>
+
+
+                      <div class="dropdown">
+                        <button class="btn btn-link dropdown-toggle action-button" type="button" id="actionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                          <i class="mdi mdi-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="actionDropdown">
+                          <li><a class="dropdown-item" href="javascript:void(0)" (click)="openModal(content, customer)"><i class="mdi mdi-eye"></i> Edit</a></li>
+                          <!-- <li><a class="dropdown-item" href="javascript:void(0)" (click)="showPayments(data)"><i class="mdi mdi-currency-usd"></i> Show Payments</a></li> -->
+                          <li><a class="dropdown-item" href="javascript:void(0)" (click)="makePayment(customer.id)"><i class="mdi mdi-plus-circle-outline"></i> Make Payment</a></li>
+                          <li><a class="dropdown-item text-danger" href="javascript:void(0)" (click)="deleteCustomer(customer.id)"><i class="mdi mdi-trash-can-outline"></i> Delete </a></li>
+                        </ul>
+                      </div>
+
+                    </td>
+
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Customer Modal -->
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title mt-0">{{ selectedCustomerId ? 'Edit Customer' : 'Add Customer' }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    <form (ngSubmit)="saveCustomer()" [formGroup]="formData">
+      <div class="mb-3">
+        <label for="name" class="form-label">Username</label>
+        <input type="text" class="form-control" id="name" formControlName="name" [ngClass]="{'is-invalid': submitted && form['name'].errors}" placeholder="Enter Username" />
+        <div *ngIf="submitted && form['name'].errors" class="invalid-feedback">
+          Username is required.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" formControlName="email" [ngClass]="{'is-invalid': submitted && form['email'].errors}" placeholder="Enter Email" />
+        <div *ngIf="submitted && form['email'].errors" class="invalid-feedback">
+          <span *ngIf="form['email'].errors?.required">Email is required.</span>
+          <span *ngIf="form['email'].errors?.email">Please enter a valid email address.</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="tele" class="form-label">Phone</label>
+        <input type="text" class="form-control" id="tele" formControlName="tele" [ngClass]="{'is-invalid': submitted && form['tele'].errors}" placeholder="Enter Phone" />
+        <div *ngIf="submitted && form['tele'].errors" class="invalid-feedback">
+          Phone is required.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="localisation" class="form-label">Address</label>
+        <input type="text" class="form-control" id="localisation" formControlName="localisation" [ngClass]="{'is-invalid': submitted && form['localisation'].errors}" placeholder="Enter Address" />
+        <div *ngIf="submitted && form['localisation'].errors" class="invalid-feedback">
+          Address is required.
+        </div>
+      </div>
+
+      <!-- <div class="mb-3">
+        <label for="remainingAmount" class="form-label">Balance</label>
+        <input type="number" class="form-control" id="remainingAmount" formControlName="remainingAmount" placeholder="Enter Balance" />
+      </div>
+
+      <div class="mb-3">
+        <label for="dueDate" class="form-label">Due Date</label>
+        <input type="date" class="form-control" id="dueDate" formControlName="dueDate" />
+      </div> -->
+
+      <button type="submit" class="btn btn-success">{{ selectedCustomerId ? 'Update' : 'Save' }}</button>
+    </form>
+  </div>
+</ng-template>

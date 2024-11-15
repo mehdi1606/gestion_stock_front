@@ -1,0 +1,87 @@
+<div class="container-fluid">
+  <!-- Page Title -->
+  <app-page-title title="Products" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+
+  <!-- Filter and Add Product Section -->
+  <div class="row mb-3 align-items-center">
+    <div class="col-md-8">
+      <div class="input-group input-group-sm">
+        <input type="text" class="form-control" placeholder="Search for products..." (input)="searchFilter($event)">
+        <select class="form-select ms-2" (change)="categoryFilter($event.target.value)">
+          <option value="All">All Categories</option>
+          <option *ngFor="let category of distinctCategories" [value]="category">{{ category }}</option>
+        </select>
+        <div class="ms-2 d-flex align-items-center">
+          <!-- Button with an icon for sorting -->
+          <button class="btn btn-outline-secondary" (click)="toggleSortIcon()">
+            <i [ngClass]="sortIconUp ? 'bx bx-sort-up' : 'bx bx-sort-down'"></i>
+          </button>
+
+          <!-- Button for Advanced Filters -->
+          <button class="btn btn-outline-secondary ms-2" (click)="toggleDropdown()">
+            <i class="bx bx-filter-alt"></i> Advanced Filters
+          </button>
+
+          <!-- Dropdown for sorting criteria -->
+          <div class="position-relative">
+            <div *ngIf="dropdownVisible" class="dropdown-menu show mt-2">
+              <button class="dropdown-item" (click)="sortFilter('name')">Filter by Name</button>
+              <button class="dropdown-item" (click)="sortFilter('price')">Filter by Price</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4 text-end">
+      <button class="btn btn-primary btn-sm" (click)="addProduct()">
+        <i class="bx bx-plus"></i> Add Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Product Table -->
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" class="text-center">#</th>
+          <th scope="col" class="cursor-pointer" (click)="sortTable('name')">
+            Product Name
+            <i [class]="getSortIcon('name')" class="ms-1"></i>
+          </th>
+          <th scope="col" class="cursor-pointer" (click)="sortTable('category')">
+            Category
+            <i [class]="getSortIcon('category')" class="ms-1"></i>
+          </th>
+          <th scope="col" class="text-center cursor-pointer" (click)="sortTable('price')">
+            Price
+            <i [class]="getSortIcon('price')" class="ms-1"></i>
+          </th>
+          <th scope="col" class="cursor-pointer" (click)="sortTable('description')">
+            Description
+            <i [class]="getSortIcon('description')" class="ms-1"></i>
+          </th>
+          <th scope="col" class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of filteredProducts; let i = index">
+          <th scope="row" class="text-center">{{ i + 1 }}</th>
+          <td>{{ product.nom }}</td>
+          <td>{{ product.category }}</td>
+          <td class="text-center">{{ product.price }} MAD</td>
+          <td>{{ product.description }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="editProduct(product.id)">
+              <i class="bx bx-edit-alt"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(product.id)">
+              <i class="bx bx-trash-alt"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

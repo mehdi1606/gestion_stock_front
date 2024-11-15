@@ -1,0 +1,87 @@
+<div class="container-fluid mt-4">
+  <!-- Page Title -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title">Your Order</h2>
+    <nav>
+      <ol class="breadcrumb bg-transparent p-0">
+        <li class="breadcrumb-item"><a href="#">Ecommerce</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Order</li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- Cart Details Section -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+          <h4 class="card-title mb-4">Create  Order</h4>
+          <div class="card-body text-center">
+            <button class="btn btn-primary" (click)="openProductModal()">
+              <i class="fas fa-plus-circle"></i> Add Products
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Reduction</th>
+                  <th>Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let product of cartData; let i = index">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <span>{{ product.name }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <input type="number" class="form-control" [(ngModel)]="product.qty" min="1" style="width: 70px;">
+                  </td>
+                  <td>{{ product.price }} MAD</td>
+                  <td>{{ getReduction(product).toFixed(2) }} MAD</td>
+                  <td>{{ (product.total - getReduction(product)).toFixed(2) }} MAD</td>
+                  <td>
+                    <button class="btn btn-outline-danger btn-sm" (click)="removeProduct(i)">
+                      <i class="fas fa-trash-alt"></i> Remove
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Selection and Order Save Section -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h4 class="card-title mb-4">Order Details</h4>
+          <div class="form-group">
+            <label for="customerSelect">Select Customer</label>
+            <select id="customerSelect" class="form-control" [(ngModel)]="selectedCustomerId">
+              <option *ngFor="let customer of customers" [value]="customer.id">{{ customer.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="paymentAmount">Payment Amount</label>
+            <input type="number" id="paymentAmount" class="form-control" [(ngModel)]="paymentAmount" min="0" />
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <strong>Total: {{ calculateTotal() }} MAD</strong>
+            <button class="btn btn-success" (click)="saveOrder()">
+              <i class="fas fa-save"></i> Save Order
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="container-fluid">
+
+  <!-- start page title -->
+  <app-page-title title="Détail" [breadcrumbItems]="breadCrumbItems"></app-page-title>
+  <!-- end page title -->
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="invoice-title">
+            <h4 class="float-end font-size-16">Commande # {{ orderDetail?.invoiceNumber }}</h4>
+            <div class="auth-logo mb-4">
+              <img src="assets/images/logo-light.png" alt="logo" class="auth-logo-dark" height="70"/>
+              <img src="assets/images/logo-light.png" alt="logo" class="auth-logo-light" height="70"/>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-6">
+              <address>
+                <strong>Facturé à:</strong><br>
+                <strong>Nom et prenom : </strong>{{ orderDetail?.customer.name }}<br>
+                <strong>Address : </strong>  {{ orderDetail?.customer.localisation }}
+              </address>
+            </div>
+            <div class="col-6 text-sm-end">
+              <address>
+                <strong>Email:</strong><br>
+                {{ orderDetail?.customer.email }}
+              </address>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mt-3">
+              <address>
+                <strong>Téléphone:</strong><br>
+                {{ orderDetail?.customer.tele }}
+              </address>
+            </div>
+            <div class="col-6 mt-3 text-sm-end">
+              <address>
+                <strong>Date de la commande:</strong><br>
+                {{ orderDetail?.dueDate }}<br><br>
+              </address>
+            </div>
+          </div>
+          <div class="py-2 mt-3">
+            <h3 class="font-size-15 fw-bold">Résumé de la commande</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+
+                  <th>Article</th>
+                  <th class="text-end">Prix</th>
+                  <th class="text-end">Quantity</th>
+                  <th class="text-end">Réduction</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let product of orderDetail?.orderProducts; let i = index">
+
+                  <td  >{{ product.product.nom }} - {{ product.product.description }}</td>
+                  <td class="text-end">{{ product.product.price }} MAD</td>
+                  <td class="text-end">{{ product.quantity }}</td>
+                  <td class="text-end">
+                    <span *ngIf="isDiscountable(product)"> {{ calculateDiscount(product).toFixed(2)  }} MAD</span>
+                    <span *ngIf="!isDiscountable(product)">0 MAD</span>
+                  </td>
+
+                  <td class="text-end">
+                    {{ calculateTotal(product).toFixed(2) }} MAD
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="border-0 text-end">
+                    <strong>Total</strong>
+                  </td>
+                  <td class="border-0 text-end">
+                    <h4 class="m-0">{{ orderDetail?.totalAmount }} MAD</h4>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="d-print-none">
+            <div class="float-end">
+              <a href="javascript:window.print()" class="btn btn-success"><i class="fa fa-print"></i></a>
+              <a href="javascript:void(0);" (click)="downloadPDF()" class="btn btn-primary w-md ms-1">Télécharger</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- end row -->
+
+  <div class="row">
+    <div class="col-12 text-center mt-4">
+      <p>
+        LOT EL MAJD N°647-TANGER- MAROC TEL/FAX : +212 (05) 39351084 E-MAIL: ADAGUEN&#64;GMAIL.COM <br>
+        Web : www.adaguen.com IF : 04935841 – PAT: 57198778- RC: 24833 – CNSS: 6942743 <br>
+        ICE : 000067422000005
+      </p>
+    </div>
+  </div>
+
+</div> <!-- container-fluid -->

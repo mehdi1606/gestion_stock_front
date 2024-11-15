@@ -1,0 +1,426 @@
+/* Variables for consistent styling and design */
+$primary-color: #44e0eb; /* Indigo for primary highlights */
+$secondary-color: #737373; /* Soft grey for less important text */
+$accent-color: #F43F5E; /* Light pink for accents and charts */
+$background-color: #F9FAFB; /* Light grey for dashboard background */
+$card-background: #FFFFFF; /* White for cards */
+$text-color: #111827; /* Almost black for main text */
+$box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Softer shadow for cards */
+$font-family: 'Inter', sans-serif;
+$transition: all 0.3s ease;
+$hover-transform: translateY(-5px);
+$border-radius: 16px;
+$button-background: #46e5e5;
+$button-hover-background: darken($button-background, 10%);
+$button-text-color: #FFFFFF;
+
+/* General Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $font-family;
+  background-color: $background-color;
+  color: $text-color;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+  max-width: 1400px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2em;
+}
+
+/* Card Section for Totals */
+.card-container {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 2em;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: $card-background;
+  padding: 2em;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  width: calc(25% - 20px);
+  text-align: left;
+  transition: $transition;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &:hover {
+    transform: $hover-transform;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    font-size: 1em;
+    color: $secondary-color;
+    margin-bottom: 0.5em;
+  }
+
+  p {
+    font-size: 2.5em;
+    font-weight: 600;
+    color: $primary-color;
+    margin-bottom: 0.5em;
+  }
+
+  .trend {
+    font-size: 0.9em;
+    color: $accent-color;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .icon-container {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+
+    i {
+      font-size: 2.5em;
+      color: $accent-color;
+    }
+  }
+}
+
+/* Button Styling */
+.button {
+  background: $button-background;
+  color: $button-text-color;
+  border: none;
+  padding: 0.75em 1.5em;
+  border-radius: $border-radius;
+  font-size: 1em;
+  cursor: pointer;
+  transition: $transition;
+
+  &:hover {
+    background: $button-hover-background;
+  }
+}
+
+/* Chart Section */
+.chart-container {
+  background: $card-background;
+  padding: 30px;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  margin-bottom: 20px;
+  transition: $transition;
+
+  &:hover {
+    transform: $hover-transform;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  h3 {
+    font-size: 1.5em;
+    color: $secondary-color;
+    margin-bottom: 1em;
+  }
+
+  div {
+    width: 100% !important;
+    height: 400px !important;
+  }
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  background: $card-background;
+  box-shadow: $box-shadow;
+  border-radius: $border-radius;
+  padding: 2em;
+  width: 250px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+
+  a {
+    text-decoration: none;
+    color: $text-color;
+    font-size: 1.2em;
+    transition: $transition;
+
+    &:hover {
+      color: $primary-color;
+    }
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .stat-card {
+    width: calc(33.33% - 20px);
+  }
+
+  .sidebar {
+    width: 200px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .stat-card {
+    width: calc(50% - 20px);
+    margin-bottom: 20px;
+  }
+
+  .chart-container {
+    width: 100%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-card {
+    width: 80%;
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-card {
+    width: 100%;
+  }
+
+  .chart-container {
+    padding: 15px;
+  }
+}
+
+/* Footer Section */
+.footer {
+  background: $background-color;
+  padding: 2em;
+  text-align: center;
+  color: $secondary-color;
+  font-size: 1em;
+  border-top: 1px solid lighten($text-color, 40%);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.5s ease-in-out;
+}
+
+/* Forms Styling */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin-bottom: 1.5em;
+}
+
+label {
+  font-size: 1em;
+  color: $secondary-color;
+}
+
+input, select, textarea {
+  padding: 0.75em;
+  border: 1px solid lighten($text-color, 40%);
+  border-radius: $border-radius;
+  font-size: 1em;
+  transition: $transition;
+
+  &:focus {
+    border-color: $primary-color;
+    outline: none;
+    box-shadow: 0 0 5px rgba($primary-color, 0.3);
+  }
+}
+
+button.submit-button {
+  @extend .button;
+  background: $accent-color;
+
+  &:hover {
+    background: darken($accent-color, 10%);
+  }
+}
+ // Chart Section
+ .chart-container {
+  background: $card-background;
+  padding: 40px;
+  margin-bottom: 4em;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  transition: $transition;
+  animation: fadeIn 2s ease;
+
+  &:hover {
+    transform: $hover-transform;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  h3 {
+    font-size: 2em;
+    color: $secondary-color;
+    margin-bottom: 30px;
+  }
+
+  div {
+    width: 100% !important;
+    height: 500px !important;
+  }
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5em;
+  margin-bottom: 40px;
+  color: $text-color;
+  animation: fadeIn 1.8s ease;
+}
+
+.chart-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: center;
+  margin-bottom: 5em;
+
+  &.single-chart {
+    justify-content: center;
+  }
+
+  .chart-container {
+    background: $card-background;
+    padding: 45px;
+    border-radius: $border-radius;
+    box-shadow: $box-shadow;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    transition: $transition;
+
+    &:hover {
+      transform: $hover-transform;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    h3 {
+      font-size: 1.8em;
+      color: $text-color;
+      margin-bottom: 30px;
+    }
+
+    div {
+      width: 100% !important;
+      max-height: 450px;
+    }
+  }
+}
+
+// Animations for Icon Container
+.stat-card {
+  .icon-container {
+    margin-bottom: 1em;
+    animation: bounceIn 1.2s ease;
+
+    i {
+      font-size: 3em;
+      color: $primary-color;
+      transition: transform 0.4s ease;
+    }
+  }
+
+  &:hover .icon-container i {
+    transform: scale(1.2) rotate(-15deg);
+  }
+}
+
+// Additional Animations & Hover Effects for Interaction
+@keyframes popIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Add a glowing effect to cards on hover
+.stat-card:hover {
+  box-shadow: 0 0 25px $primary-color;
+  animation: popIn 0.5s ease-in-out;
+}
+
+// Smooth scroll effect for entire page
+html {
+  scroll-behavior: smooth;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .stat-card {
+    width: 100%;
+    padding: 2em;
+  }
+
+  .chart-container {
+    padding: 20px;
+  }
+
+  .dashboard-title {
+    font-size: 2.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 2em;
+  }
+
+  .stat-card h2, .chart-container h3 {
+    font-size: 1.5em;
+  } }

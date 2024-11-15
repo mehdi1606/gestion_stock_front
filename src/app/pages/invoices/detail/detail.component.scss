@@ -1,0 +1,36 @@
+@media print {
+  /* Remove browser header and footer */
+  @page {
+    margin: 0;
+    size: A4;
+  }
+
+  body {
+    margin: 2cm 1.5cm; /* Add margin for content */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide any navigation elements */
+  .d-print-none,
+  app-page-title,
+  .btn {
+    display: none !important;
+  }
+
+  /* Ensure card has no margin/padding that could cause extra pages */
+  .card {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  .card-body {
+    padding: 0 !important;
+  }
+
+  /* Ensure table fits on one page */
+  .table {
+    page-break-inside: avoid;
+  }
+}
