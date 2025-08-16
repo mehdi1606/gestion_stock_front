@@ -23,28 +23,17 @@ import { PagesRoutingModule } from './pages-routing.module';
 
 import { DashboardsModule } from './dashboards/dashboards.module';
 import { EcommerceModule } from './ecommerce/ecommerce.module';
-import { CryptoModule } from './crypto/crypto.module';
-import { EmailModule } from './email/email.module';
-import { InvoicesModule } from './invoices/invoices.module';
-import { ProjectsModule } from './projects/projects.module';
-import { TasksModule } from './tasks/tasks.module';
-import { ContactsModule } from './contacts/contacts.module';
-import { BlogModule } from "./blog/blog.module";
+
+
 import { UtilityModule } from './utility/utility.module';
 import { UiModule } from './ui/ui.module';
-import { FormModule } from './form/form.module';
-import { TablesModule } from './tables/tables.module';
-import { IconsModule } from './icons/icons.module';
-import { ChartModule } from './chart/chart.module';
-import { CalendarComponent } from './calendar/calendar.component';
-import { MapsModule } from './maps/maps.module';
-import { HttpClientModule } from '@angular/common/http';
-import { ChatComponent } from './chat/chat.component';
 
-import { FilemanagerComponent } from './filemanager/filemanager.component';
+import { HttpClientModule } from '@angular/common/http';
+
+
 
 @NgModule({
-  declarations: [CalendarComponent, ChatComponent, FilemanagerComponent],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
@@ -54,24 +43,12 @@ import { FilemanagerComponent } from './filemanager/filemanager.component';
     NgApexchartsModule,
     ReactiveFormsModule,
     DashboardsModule,
-    CryptoModule,
     EcommerceModule,
-    EmailModule,
-    InvoicesModule,
     HttpClientModule,
-    ProjectsModule,
     UIModule,
-     TasksModule,
-    ContactsModule,
-    BlogModule,
     UtilityModule,
     UiModule,
-    FormModule,
-    TablesModule,
-    IconsModule,
-    ChartModule,
     WidgetModule,
-    MapsModule,
     FullCalendarModule,
     TabsModule.forRoot(),
     TooltipModule.forRoot(),

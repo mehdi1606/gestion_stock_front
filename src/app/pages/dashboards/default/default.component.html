@@ -5,7 +5,7 @@
 
 
 <body>
-  <div class="dashboard-container">  
+  <div class="dashboard-container">
     <div class="card-containers" style="display: flex; gap: 20px;">
       <div class="stat-cards" style="background-color: #ffffff; padding: 20px; border-radius: 8px; flex: 1; text-align: center; color: #333; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border: 1px solid #e0e0e0;">
         <div class="icon-containers" style="font-size: 29px; margin-bottom: 10px; color: #007bff;">
@@ -14,50 +14,59 @@
         <h2 style="font-size: 16px; margin-bottom: 8px; color: #555;">Nombre Total de Commandes</h2>
         <p style="font-size: 22px; font-weight: bold;">{{ totalOrders }}</p>
       </div>
-    
+
       <div class="stat-cards" style="background-color: #ffffff; padding: 20px; border-radius: 8px; flex: 1; text-align: center; color: #333; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border: 1px solid #e0e0e0;">
         <div class="icon-containers" style="font-size: 29px; margin-bottom: 10px; color: #28a745;">
           <i class="fas fa-coins"></i>
         </div>
         <h2 style="font-size: 16px; margin-bottom: 8px; color: #555;">Montant Global Total (MAD)</h2>
-        <p style="font-size: 22px; font-weight: bold;">{{ totalGlobalAmount }}</p>
+        <p style="font-size: 22px; font-weight: bold;">{{ totalGlobalAmount.toFixed(2) }} </p>
       </div>
-    
+
       <div class="stat-cards" style="background-color: #ffffff; padding: 20px; border-radius: 8px; flex: 1; text-align: center; color: #333; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border: 1px solid #e0e0e0;">
         <div class="icon-containers" style="font-size: 29px; margin-bottom: 10px; color: #ffc107;">
           <i class="fas fa-hand-holding-usd"></i>
         </div>
         <h2 style="font-size: 16px; margin-bottom: 8px; color: #555;">Montant Total Payé (MAD)</h2>
-        <p style="font-size: 22px; font-weight: bold;">{{ totalPaid }}</p>
+        <p style="font-size: 22px; font-weight: bold;">{{ totalPaid.toFixed(2) }} </p>
       </div>
     </div>
     <h2 class="section-title">Statistiques des Commandes</h2>
-  
+
     <div class="chart-row">
       <div class="chart-container">
         <h3>Statut de Paiement des Commandes</h3>
         <div id="orderStatusChart"></div>
       </div>
-  
+
       <div class="chart-container">
         <h3>Répartition des Montants</h3>
         <div id="amountBreakdownChart"></div>
       </div>
     </div>
-  
+
     <div class="chart-row single-chart">
       <div class="chart-container" style="width: 100%; max-width: 1200px; margin: auto;">
         <h3>Distribution Mensuelle des Ventes</h3>
         <div id="monthlySalesChart" style="height: 600px; width: 100%;"></div>
       </div>
     </div>
-    
+
     <div class="chart-row single-chart">
       <div class="chart-container" style="width: 100%; max-width: 1200px; margin: auto;">
         <h3>Nombre de Produits Vendus par Catégorie</h3>
         <div id="categoryChart" style="height: 500px; width: 100%;"></div>
       </div>
     </div>
+    <div class="chart-row single-chart">
+      <div class="chart-container" style="width: 100%; max-width: 1200px; margin: auto;">
+        <h3>Produits les Plus Commandés</h3>
+        <div id="productPopularityChart" style="height: 500px; width: 100%;"></div>
+      </div>
+    </div>
+   
+
+
   </div>
 </body>
 

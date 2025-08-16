@@ -1,5 +1,4 @@
 <div class="container-fluid">
-
   <!-- start page title -->
   <app-page-title title="Détail" [breadcrumbItems]="breadCrumbItems"></app-page-title>
   <!-- end page title -->
@@ -9,19 +8,23 @@
       <div class="card">
         <div class="card-body">
           <div class="invoice-title">
-            <h4 class="float-end font-size-16">Commande # {{ orderDetail?.invoiceNumber }}</h4>
+            <h4 class="float-end font-size-16">
+              {{ orderDetail?.documentType === 'FACTURE' ? 'Facture : ' : 'Bon de livraison : ' }}{{ orderDetail?.invoiceNumber }}
+            </h4>
             <div class="auth-logo mb-4">
-              <img src="assets/images/logo-light.png" alt="logo" class="auth-logo-dark" height="70"/>
-              <img src="assets/images/logo-light.png" alt="logo" class="auth-logo-light" height="70"/>
+              <img src="assets/images/logo-dark.png" alt="logo" class="auth-logo-dark" height="70"/>
+              <img src="assets/images/logo-dark.png" alt="logo" class="auth-logo-light" height="70"/>
             </div>
           </div>
           <hr>
+
+          <!-- Customer details -->
           <div class="row">
             <div class="col-6">
               <address>
-                <strong>Facturé à:</strong><br>
-                <strong>Nom et prenom : </strong>{{ orderDetail?.customer.name }}<br>
-                <strong>Address : </strong>  {{ orderDetail?.customer.localisation }}
+                <strong>Client :</strong><br>
+                <strong>Nom et prénom : </strong>{{ orderDetail?.customer.name }}<br>
+                <strong>ICE : </strong>{{ orderDetail?.customer.ice }}
               </address>
             </div>
             <div class="col-6 text-sm-end">
@@ -45,47 +48,84 @@
               </address>
             </div>
           </div>
+
+          <!-- Order summary -->
           <div class="py-2 mt-3">
             <h3 class="font-size-15 fw-bold">Résumé de la commande</h3>
           </div>
+
+          <!-- Order table -->
           <div class="table-responsive">
             <table class="table">
               <thead>
                 <tr>
-
                   <th>Article</th>
                   <th class="text-end">Prix</th>
-                  <th class="text-end">Quantity</th>
+                  <th class="text-end">Quantité</th>
                   <th class="text-end">Réduction</th>
                   <th class="text-end">Total</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let product of orderDetail?.orderProducts; let i = index">
-
-                  <td  >{{ product.product.nom }} - {{ product.product.description }}</td>
+                <tr *ngFor="let product of orderDetail?.orderProducts">
+                  <td>{{ product.product.nom }} - {{ product.product.description }}</td>
                   <td class="text-end">{{ product.product.price }} MAD</td>
                   <td class="text-end">{{ product.quantity }}</td>
                   <td class="text-end">
-                    <span *ngIf="isDiscountable(product)"> {{ calculateDiscount(product).toFixed(2)  }} MAD</span>
-                    <span *ngIf="!isDiscountable(product)">0 MAD</span>
+                    <span *ngIf="isDiscountable(product)">
+                      {{ calculateDiscount(product).toFixed(2) }} MAD
+                    </span>
+                    <span *ngIf="!isDiscountable(product)">
+                      0 MAD
+                    </span>
                   </td>
-
                   <td class="text-end">
-                    {{ calculateTotal(product).toFixed(2) }} MAD
+                    {{ calculateTotalPriceAfterDiscount(product).toFixed(2) }} MAD
                   </td>
                 </tr>
+
+                <!-- Total global row -->
                 <tr>
                   <td colspan="4" class="border-0 text-end">
-                    <strong>Total</strong>
+                    <strong>Total HT</strong>
                   </td>
                   <td class="border-0 text-end">
-                    <h4 class="m-0">{{ orderDetail?.totalAmount }} MAD</h4>
+                    <h4 class="m-0">
+                      {{ orderDetail?.documentType === 'FACTURE'
+                        ? (this.orderDetail?.totalAmount/(1+0.2)).toFixed(2)
+                        : orderDetail?.totalAmount.toFixed(2) }} MAD
+                    </h4>
+                  </td>
+                </tr>
+
+                <!-- TVA row (only for FACTURE) -->
+                <tr *ngIf="orderDetail?.documentType === 'FACTURE'">
+                  <td colspan="4" class="border-0 text-end">
+                    <strong>TVA (20%):</strong>
+                  </td>
+                  <td class="border-0 text-end">
+                    <h4 class="m-0">
+                      {{ (((this.orderDetail?.totalAmount/(1+0.2)).toFixed(2))*0.2).toFixed(2) }} MAD
+                    </h4>
+                  </td>
+                </tr>
+
+                <!-- Total with TVA row (only for FACTURE) -->
+                <tr *ngIf="orderDetail?.documentType === 'FACTURE'">
+                  <td colspan="4" class="border-0 text-end">
+                    <strong>Total TTC:</strong>
+                  </td>
+                  <td class="border-0 text-end">
+                    <h4 class="m-0">
+                      {{ (orderDetail?.totalAmount).toFixed(2) }} MAD
+                    </h4>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <!-- Print and PDF download buttons -->
           <div class="d-print-none">
             <div class="float-end">
               <a href="javascript:window.print()" class="btn btn-success"><i class="fa fa-print"></i></a>
@@ -98,6 +138,7 @@
   </div>
   <!-- end row -->
 
+  <!-- Footer -->
   <div class="row">
     <div class="col-12 text-center mt-4">
       <p>

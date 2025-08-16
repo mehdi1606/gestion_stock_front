@@ -50,6 +50,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/@mdi/font/css/materialdesignicons.min.css",
               "node_modules/chartist/dist/index.css",
               "./node_modules/ngx-ui-switch/ui-switch.component.css",
               "node_modules/@ctrl/ngx-emoji-mart/picker.css",

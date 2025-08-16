@@ -1,47 +1,31 @@
+import { FournisseursComponent } from './customers/fournisseurs.component';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { ProductsComponent } from './products/products.component';
-import { ProductdetailComponent } from './productdetail/productdetail.component';
-import { ShopsComponent } from './shops/shops.component';
-import { CheckoutComponent } from './checkout/checkout.component';
+import { ArticlesComponent } from './products/articles.component';
 import { CartComponent } from './cart/cart.component';
-import { AddproductComponent } from './addproduct/addproduct.component';
-import { CustomersComponent } from './customers/customers.component';
+
 import { OrdersComponent } from './orders/orders.component';
+import { CustomerOrdersComponent } from './customer-orders/customer-orders.component';
 
 const routes: Routes = [
     {
-        path: 'products',
-        component: ProductsComponent
+        path: 'articles',
+        component: ArticlesComponent
     },
-    {
-        path: 'product-detail/:id',
-        component: ProductdetailComponent
-    },
-    {
-        path: 'shops',
-        component: ShopsComponent
-    },
-    {
-        path: 'checkout',
-        component: CheckoutComponent
-    },
+    { path: 'customer-orders/:customerId', component: CustomerOrdersComponent },
     {
         path: 'cart',
         component: CartComponent
     },
+
     {
-        path: 'add-product',
-        component: AddproductComponent
-    },
-    {
-        path: 'customers',
-        component: CustomersComponent
+        path: 'fournisseurs',
+        component: FournisseursComponent
     },
     {
         path: 'orders',
-        component: OrdersComponent
+          component: OrdersComponent
     }
 ];
 

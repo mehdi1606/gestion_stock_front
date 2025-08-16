@@ -19,7 +19,7 @@
                 <button type="button" class="btn btn-success btn-rounded mb-2 me-2" (click)="navigateToCart()"><i class="mdi mdi-plus mr-1"></i>
                   Add New Order</button>
               </div>
-            </div><!-- end col-->
+            </div>
           </div>
 
           <!-- Table data -->
@@ -34,13 +34,13 @@
                     </div>
                   </th>
                   <th class="align-middle">Order ID</th>
+                  <th class="align-middle">Factures ID</th>
                   <th class="align-middle">Billing Name</th>
                   <th class="align-middle">Date</th>
                   <th class="align-middle">Total</th>
                   <th class="align-middle">Amount Paid</th>
                   <th class="align-middle">Remaining Amount</th>
                   <th class="align-middle">Status</th>
-                  <th class="align-middle">View Details</th>
                   <th class="align-middle">Action</th>
                 </tr>
               </thead>
@@ -54,19 +54,17 @@
                     </div>
                   </td>
                   <td><a href="javascript:void(0);" class="text-body fw-bold">{{data.id}}</a></td>
+                  <td>{{data.invoiceNumber}}</td>
                   <td>{{data.name}}</td>
                   <td>{{data.date}}</td>
                   <td>{{data.total}}</td>
-                  <td>{{data.amountPaid}}</td>
-                  <td>{{data.remainingAmount}}</td>
+                  <td>{{data.amountPaid.toFixed(2)}} </td>
+                  <td>{{data.remainingAmount.toFixed(2)}} </td>
                   <td>
                     <span class="badge rounded-pill" [ngClass]="{
                       'bg-success': data.status === 'Paid',
                       'bg-danger': data.status === 'Unpaid'
                     }">{{data.status}}</span>
-                  </td>
-                  <td>
-                    <button type="button" class="btn btn-primary btn-sm btn-rounded" (click)="navigateToInvoiceDetail(data.id)">View Details</button>
                   </td>
                   <td>
                     <div class="dropdown">
@@ -75,6 +73,11 @@
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="actionDropdown">
                         <li><a class="dropdown-item" href="javascript:void(0)" (click)="navigateToInvoiceDetail(data.id)"><i class="mdi mdi-eye"></i> View Details</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <!-- NEW: Edit options -->
+                        <li><a class="dropdown-item" href="javascript:void(0)" (click)="editOrder(data.id)"><i class="mdi mdi-pencil"></i> Edit Order </a></li>
+                        <!-- <li><a class="dropdown-item" href="javascript:void(0)" (click)="editOrderBasicInfo(data)"><i class="mdi mdi-pencil-outline"></i> Quick Edit</a></li> -->
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="javascript:void(0)" (click)="downloadPdf(data)"><i class="mdi mdi-download"></i> Download PDF</a></li>
                         <li><a class="dropdown-item text-danger" href="javascript:void(0)" (click)="deleteSale(data)"><i class="mdi mdi-trash-can-outline"></i> Delete Sale</a></li>
                       </ul>
@@ -92,8 +95,7 @@
             <pagination [totalItems]="totalItems" [itemsPerPage]="pageSize" (pagechanged)="pageChanged($event)"></pagination>
           </div>
         </div>
-        </div>
       </div>
-
+    </div>
   </div>
 </div>

@@ -1,0 +1,202 @@
+// Variables
+$primary-color: #2c3e50;
+$secondary-color: #3498db;
+$accent-color: #e74c3c;
+$text-color: #2c3e50;
+$light-gray: #ecf0f1;
+$white: #ffffff;
+$success-color: #27ae60;
+$warning-color: #f1c40f;
+
+.container-fluid {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  .swal2-custom-popup {
+    font-family: 'Tajawal', sans-serif;
+    background: #f8fafc;
+    color: #334155;
+    border-radius: 15px;
+  }
+  // Customer Name Header
+  .customer-header {
+    background: linear-gradient(135deg, $primary-color, $secondary-color);
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    h2 {
+      color: $white;
+      font-size: 2.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 0;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  // Cards Styling
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-body {
+      padding: 1.5rem;
+      text-align: center;
+      background: $white;
+
+      .card-title {
+        color: $text-color;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .card-text {
+        color: $secondary-color;
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+      }
+    }
+  }
+
+  // Table Styling
+  .table-responsive {
+    background: $white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+
+    .table {
+      margin: 0;
+
+      thead {
+        background-color: $primary-color;
+
+        th {
+          color: #343a40;
+          font-weight: 600;
+          text-transform: uppercase;
+          padding: 1rem;
+          font-size: 0.9rem;
+          letter-spacing: 0.5px;
+          border: none;
+        }
+      }
+
+      tbody {
+        tr {
+          transition: background-color 0.3s ease;
+
+          &:hover {
+            background-color: $light-gray;
+          }
+
+          td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: $text-color;
+            border-bottom: 1px solid #dee2e6;
+
+            // Amount Styling
+            &:nth-child(4), // Total Amount
+            &:nth-child(5), // Amount Paid
+            &:nth-child(7)  // Remaining Amount
+            {
+              font-weight: 600;
+              &::after {
+                content: " MAD";
+                font-size: 0.8em;
+                color: #666;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+
+    .customer-header {
+      padding: 1.5rem;
+
+      h2 {
+        font-size: 2rem;
+      }
+    }
+
+    .card {
+      margin-bottom: 1rem;
+
+      .card-body {
+        .card-text {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .table-responsive {
+      padding: 1rem;
+
+      .table {
+        thead th {
+          font-size: 0.8rem;
+        }
+
+        tbody td {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
+// Animation for loading states
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $light-gray;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $secondary-color;
+  border-radius: 4px;
+
+  &:hover {
+    background: darken($secondary-color, 10%);
+  }
+}

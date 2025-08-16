@@ -1,0 +1,698 @@
+<!-- articles.component.html -->
+<div class="article-management-app">
+  <!-- Top Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <div class="page-title-section">
+        <div class="main-title">
+          <div class="title-icon">
+            <i class="mdi mdi-package-variant-closed"></i>
+          </div>
+          <div class="title-content">
+            <span class="title-text">Gestion des Articles</span>
+            <span class="title-subtitle">Système de gestion d'inventaire moderne</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="header-actions">
+        <button type="button" class="header-btn secondary" (click)="generateReport()">
+          <i class="mdi mdi-chart-line"></i>
+          Rapport
+        </button>
+        <button type="button" class="header-btn secondary" (click)="exportData()">
+          <i class="mdi mdi-download"></i>
+          Exporter
+        </button>
+        <button type="button" class="header-btn primary" (click)="openAddEditModal()">
+          <i class="mdi mdi-plus"></i>
+          Nouvel Article
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Dashboard -->
+  <div class="stats-dashboard">
+    <div class="stats-container">
+      <div class="stat-card primary">
+        <div class="stat-visual">
+          <div class="stat-icon-wrapper primary">
+            <i class="mdi mdi-package-variant"></i>
+          </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ statistics.total }}</div>
+          <div class="stat-label">Total Articles</div>
+        </div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-visual">
+          <div class="stat-icon-wrapper success">
+            <i class="mdi mdi-check-circle"></i>
+          </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ statistics.actifs }}</div>
+          <div class="stat-label">Actifs</div>
+        </div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-visual">
+          <div class="stat-icon-wrapper danger">
+            <i class="mdi mdi-alert-circle"></i>
+          </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ statistics.stockCritique }}</div>
+          <div class="stat-label">Stock Critique</div>
+        </div>
+      </div>
+
+      <div class="stat-card warning">
+        <div class="stat-visual">
+          <div class="stat-icon-wrapper warning">
+            <i class="mdi mdi-alert"></i>
+          </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ statistics.stockFaible }}</div>
+          <div class="stat-label">Stock Faible</div>
+        </div>
+      </div>
+
+      <div class="stat-card secondary">
+        <div class="stat-visual">
+          <div class="stat-icon-wrapper secondary">
+            <i class="mdi mdi-package-variant-remove"></i>
+          </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ statistics.stockVide }}</div>
+          <div class="stat-label">Stock Vide</div>
+        </div>
+      </div>
+
+      <div class="stat-card info">
+        <div class="stat-visual">
+          <div class="stat-icon-wrapper info">
+            <i class="mdi mdi-tag-multiple"></i>
+          </div>
+        </div>
+        <div class="stat-content">
+          <div class="stat-value">{{ statistics.categories }}</div>
+          <div class="stat-label">Catégories</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-contents">
+
+<!-- Filters Panel -->
+<div class="filters-panel">
+  <div class="search-section">
+    <div class="search-input-container">
+      <i class="mdi mdi-magnify search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Rechercher un article..."
+        [(ngModel)]="term"
+        (input)="performSearch()"
+      />
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-item">
+        <label class="filter-label">Catégorie</label>
+        <div class="select-wrapper">
+          <select class="custom-select" [formControl]="searchForm.get('categorie')" (change)="applyFilters()">
+            <option value="">Toutes les catégories</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+          <i class="mdi mdi-chevron-down select-icon"></i>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Fournisseur</label>
+        <div class="select-wrapper">
+          <select class="custom-select" [formControl]="searchForm.get('fournisseur')" (change)="applyFilters()">
+            <option value="">Tous les fournisseurs</option>
+            <option *ngFor="let f of fournisseurs" [value]="f.id">{{ f.nom }}</option>
+          </select>
+          <i class="mdi mdi-chevron-down select-icon"></i>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Statut</label>
+        <div class="select-wrapper">
+          <select class="custom-select" [formControl]="searchForm.get('status')" (change)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="true">Actif</option>
+            <option value="false">Inactif</option>
+          </select>
+          <i class="mdi mdi-chevron-down select-icon"></i>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label class="filter-label">Stock</label>
+        <div class="select-wrapper">
+          <select class="custom-select" [formControl]="searchForm.get('stockFilter')" (change)="applyFilters()">
+            <option value="">Tous les stocks</option>
+            <option value="critical">Stock critique</option>
+            <option value="low">Stock faible</option>
+            <option value="empty">Stock vide</option>
+            <option value="excessive">Stock excessif</option>
+          </select>
+          <i class="mdi mdi-chevron-down select-icon"></i>
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button class="filter-clear-btn" (click)="clearFilters()">
+          <i class="mdi mdi-filter-remove"></i>
+          Effacer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table Container -->
+<div class="table-container">
+  <div class="table-header-section">
+    <div class="results-info">
+      <div class="results-text">{{ filteredCount }} résultat(s) trouvé(s)</div>
+      <div class="results-details" *ngIf="totalElements > 0">
+        {{ (currentPage * pageSize) + 1 }} à {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
+        sur {{ totalElements }} résultats
+      </div>
+    </div>
+    <div class="table-controls">
+      <div class="entries-selector">
+        <span>Afficher</span>
+        <div class="select-wrapper mini">
+          <select class="entries-select" (change)="changePageSize($event.target.value)">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <i class="mdi mdi-chevron-down select-icon"></i>
+        </div>
+        <span>entrées</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-content">
+      <div class="loading-animation">
+        <div class="spinner-modern"></div>
+      </div>
+      <div class="loading-text">
+        <h3>Chargement en cours...</h3>
+        <p>Veuillez patienter pendant que nous récupérons les données</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Table -->
+  <div *ngIf="!loading && hasData" class="modern-table-wrapper">
+    <table class="modern-table">
+      <thead class="table-head">
+        <tr>
+          <th>#</th>
+          <th>CODE</th>
+          <th>DÉSIGNATION</th>
+          <th>CATÉGORIE</th>
+          <th>UNITÉ</th>
+          <th>PRIX UNITAIRE</th>
+          <th>STOCK ACTUEL</th>
+          <th>STOCK MIN/MAX</th>
+          <th>STATUS STOCK</th>
+          <th>FOURNISSEUR</th>
+          <th>STATUT</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody class="table-body">
+        <tr class="table-row" *ngFor="let article of articles; let i = index">
+          <td>{{ (currentPage * pageSize) + i + 1 }}</td>
+          <td>
+            <span class="code-display">{{ article.code }}</span>
+          </td>
+          <td>
+            <div class="product-info">
+              <div class="product-avatar">
+                <span class="avatar-text">{{ article.designation.charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="product-details">
+                <div class="product-name">{{ article.designation }}</div>
+                <div class="product-description" *ngIf="article.description">
+                  {{ article.description }}
+                </div>
+                <div class="product-meta" *ngIf="article.dateCreation">
+                  <div class="meta-item">
+                    <i class="mdi mdi-calendar"></i>
+                    <span>{{ article.dateCreation | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="category-tag">
+              <div class="category-dot"></div>
+              {{ article.categorie }}
+            </div>
+          </td>
+          <td>{{ article.unite }}</td>
+          <td>
+            <div class="price-display">
+              <span class="price-amount">{{ article.prixUnitaire | number:'1.2-2' }}</span>
+              <span class="price-currency">MAD</span>
+            </div>
+          </td>
+          <td>
+            <div class="stock-info">
+              <div class="stock-current">
+                <span class="stock-number" [class]="getStockBadgeClass(article)">
+                  {{ article.stockActuel || 0 }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="stock-range">
+              Min: {{ article.stockMin }}<br>
+              Max: {{ article.stockMax }}
+            </div>
+          </td>
+          <td>
+            <div class="status-indicator" [ngClass]="'status-' + getStockStatus(article)">
+              <div class="status-dot"></div>
+              {{ getStockStatus(article) | titlecase }}
+            </div>
+          </td>
+          <td>
+            <div class="supplier-info">
+              <span *ngIf="article.fournisseurNom" class="supplier-name">
+                {{ article.fournisseurNom }}
+              </span>
+              <span *ngIf="!article.fournisseurNom" class="supplier-empty">
+                Non assigné
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="active-status">
+              <div class="status-toggle" [class.active]="article.actif">
+                <div class="toggle-dot"></div>
+              </div>
+              <span class="status-label">{{ article.actif ? 'Actif' : 'Inactif' }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="action-menu">
+              <button type="button"
+                      class="action-btn edit"
+                      (click)="openAddEditModal(article)"
+                      title="Modifier">
+                <i class="mdi mdi-pencil"></i>
+              </button>
+
+              <button type="button"
+                      class="action-btn view"
+                      (click)="viewDetails(article)"
+                      title="Voir détails">
+                <i class="mdi mdi-eye"></i>
+              </button>
+
+              <button type="button"
+                      *ngIf="article.actif"
+                      class="action-btn toggle"
+                      (click)="deleteArticle(article.id!)"
+                      title="Désactiver">
+                <i class="mdi mdi-pause"></i>
+              </button>
+
+              <button type="button"
+                      *ngIf="!article.actif"
+                      class="action-btn toggle active"
+                      (click)="reactivateArticle(article.id!)"
+                      title="Réactiver">
+                <i class="mdi mdi-play"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !hasData" class="empty-state-modern">
+    <div class="empty-visual">
+      <div class="empty-icon-container">
+        <i class="mdi mdi-package-variant-closed"></i>
+      </div>
+    </div>
+    <div class="empty-content">
+      <div class="empty-title">Aucun article trouvé</div>
+      <div class="empty-description">
+        Commencez par ajouter votre premier article ou modifiez vos critères de recherche
+      </div>
+      <div class="empty-actions">
+        <button type="button" class="btn-modern primary" (click)="openModal(addEditModal)">
+          <i class="mdi mdi-plus"></i>
+          Ajouter un article
+        </button>
+        <button type="button" class="btn-modern secondary" (click)="clearFilters()">
+          <i class="mdi mdi-filter-remove"></i>
+          Effacer les filtres
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && hasData && totalPages > 1" class="pagination-modern">
+    <div class="pagination-info">
+      <span class="pagination-text">
+        {{ (currentPage * pageSize) + 1 }} à {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
+        sur {{ totalElements }} résultats
+      </span>
+    </div>
+
+    <div class="pagination-controls">
+      <button class="pagination-btn"
+              [class.disabled]="currentPage === 0"
+              (click)="currentPage > 0 && goToPage(currentPage - 1)">
+        <i class="mdi mdi-chevron-left"></i>
+        Précédent
+      </button>
+
+      <div class="pagination-pages">
+        <button *ngFor="let page of pages.slice(Math.max(0, currentPage - 2), Math.min(totalPages, currentPage + 3))"
+                class="pagination-page"
+                [class.active]="page === currentPage"
+                (click)="goToPage(page)">
+          {{ page + 1 }}
+        </button>
+      </div>
+
+      <button class="pagination-btn"
+              [class.disabled]="currentPage === totalPages - 1"
+              (click)="currentPage < totalPages - 1 && goToPage(currentPage + 1)">
+        Suivant
+        <i class="mdi mdi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+<!-- Add/Edit Modal -->
+<ng-template #addEditModal let-modal>
+  <div class="modern-modal">  <!-- Changed from 'modern-modals' to 'modern-modal' -->
+    <div class="modal-header-modern">
+      <div class="modal-title-section">
+        <div class="modal-icon">
+          <i class="mdi mdi-package-variant-closed"></i>
+        </div>
+        <div class="modal-title-content">
+          <h4 class="modal-title">
+            {{ isEditMode ? 'Modifier l\'Article' : 'Nouvel Article' }}
+          </h4>
+          <p class="modal-subtitle">
+            {{ isEditMode ? 'Modifiez les informations de l\'article' : 'Ajoutez un nouvel article au système' }}
+          </p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" (click)="modalRef?.hide()">
+        <i class="mdi mdi-close"></i>
+      </button>
+    </div>
+
+    <div class="modal-body-modern">
+      <form [formGroup]="formData" (ngSubmit)="saveArticle()" class="modern-form">
+        <!-- Section: Informations Générales -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="mdi mdi-information"></i>
+            <h4>Informations Générales</h4>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label required">Code Article</label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  class="form-input"
+                  formControlName="code"
+                  [class.error]="submitted && form['code'].errors"
+                  placeholder="Ex: ART001"
+                />
+                <i class="mdi mdi-barcode input-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['code'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                <span *ngIf="form['code'].errors?.['required']">Le code est obligatoire.</span>
+                <span *ngIf="form['code'].errors?.['minlength']">Le code doit contenir au moins 2 caractères.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">Désignation</label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  class="form-input"
+                  formControlName="designation"
+                  [class.error]="submitted && form['designation'].errors"
+                  placeholder="Ex: Ordinateur portable"
+                />
+                <i class="mdi mdi-text input-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['designation'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                <span *ngIf="form['designation'].errors?.['required']">La désignation est obligatoire.</span>
+                <span *ngIf="form['designation'].errors?.['minlength']">La désignation doit contenir au moins 2 caractères.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label class="form-label">Description</label>
+            <div class="textarea-wrapper">
+              <textarea
+                class="form-textarea"
+                formControlName="description"
+                placeholder="Description détaillée de l'article"
+                rows="3"
+              ></textarea>
+              <i class="mdi mdi-text-box textarea-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Classification -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="mdi mdi-tag-multiple"></i>
+            <h4>Classification</h4>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label required">Catégorie</label>
+              <div class="select-wrapper">
+                <select
+                  class="form-select"
+                  formControlName="categorie"
+                  [class.error]="submitted && form['categorie'].errors"
+                >
+                  <option value="">Sélectionner une catégorie</option>
+                  <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                  <option value="Electronique">Electronique</option>
+                  <option value="Informatique">Informatique</option>
+                  <option value="Mobilier">Mobilier</option>
+                  <option value="Fournitures">Fournitures</option>
+                </select>
+                <i class="mdi mdi-chevron-down select-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['categorie'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                La catégorie est obligatoire.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">Unité</label>
+              <div class="select-wrapper">
+                <select
+                  class="form-select"
+                  formControlName="unite"
+                  [class.error]="submitted && form['unite'].errors"
+                >
+                  <option value="">Sélectionner une unité</option>
+                  <option value="Pièce">Pièce</option>
+                  <option value="Kg">Kilogramme</option>
+                  <option value="Litre">Litre</option>
+                  <option value="Mètre">Mètre</option>
+                  <option value="Boîte">Boîte</option>
+                  <option value="Carton">Carton</option>
+                </select>
+                <i class="mdi mdi-chevron-down select-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['unite'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                L'unité est obligatoire.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Prix et Stock -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="mdi mdi-currency-usd"></i>
+            <h4>Prix et Gestion de Stock</h4>
+          </div>
+
+          <div class="form-grid three-columns">
+            <div class="form-group">
+              <label class="form-label required">Prix Unitaire (MAD)</label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  class="form-input"
+                  formControlName="prixUnitaire"
+                  [class.error]="submitted && form['prixUnitaire'].errors"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+                <i class="mdi mdi-currency-usd input-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['prixUnitaire'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                <span *ngIf="form['prixUnitaire'].errors?.['required']">Le prix est obligatoire.</span>
+                <span *ngIf="form['prixUnitaire'].errors?.['min']">Le prix ne peut pas être négatif.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">Stock Minimum</label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  class="form-input"
+                  formControlName="stockMin"
+                  [class.error]="submitted && form['stockMin'].errors"
+                  min="0"
+                  placeholder="0"
+                />
+                <i class="mdi mdi-trending-down input-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['stockMin'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                <span *ngIf="form['stockMin'].errors?.['required']">Le stock minimum est obligatoire.</span>
+                <span *ngIf="form['stockMin'].errors?.['min']">Le stock ne peut pas être négatif.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label required">Stock Maximum</label>
+              <div class="input-wrapper">
+                <input
+                  type="number"
+                  class="form-input"
+                  formControlName="stockMax"
+                  [class.error]="submitted && form['stockMax'].errors"
+                  min="0"
+                  placeholder="0"
+                />
+                <i class="mdi mdi-trending-up input-icon"></i>
+              </div>
+              <div *ngIf="submitted && form['stockMax'].errors" class="error-message">
+                <i class="mdi mdi-alert-circle"></i>
+                <span *ngIf="form['stockMax'].errors?.['required']">Le stock maximum est obligatoire.</span>
+                <span *ngIf="form['stockMax'].errors?.['min']">Le stock ne peut pas être négatif.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Fournisseur et Statut -->
+        <div class="form-section">
+          <div class="section-title">
+            <i class="mdi mdi-account-group"></i>
+            <h4>Fournisseur et Statut</h4>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Fournisseur</label>
+              <div class="select-wrapper">
+                <select
+                  class="form-select"
+                  formControlName="fournisseurId"
+                >
+                  <option value="">Aucun fournisseur assigné</option>
+                  <option *ngFor="let f of fournisseurs" [value]="f.id">{{ f.nom }}</option>
+                </select>
+                <i class="mdi mdi-chevron-down select-icon"></i>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Statut</label>
+              <div class="switch-wrapper">
+                <div class="switch-container">
+                  <input
+                    type="checkbox"
+                    class="switch-input"
+                    id="actif"
+                    formControlName="actif"
+                  />
+                  <label class="switch-label" for="actif">
+                    <div class="switch-toggle">
+                      <div class="switch-handle"></div>
+                    </div>
+                    <span class="switch-text">Article actif</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer-modern">
+      <button type="button" class="btn-modern secondary" (click)="modalRef?.hide()">
+        <i class="mdi mdi-close"></i>
+        Annuler
+      </button>
+      <button type="button" class="btn-modern primary" (click)="saveArticle()" [disabled]="loading">
+        <div class="btn-content">
+          <div *ngIf="loading" class="btn-spinner"></div>
+          <i *ngIf="!loading" class="mdi mdi-check"></i>
+          {{ isEditMode ? 'Modifier' : 'Ajouter' }}
+        </div>
+      </button>
+    </div>
+  </div>
+</ng-template>

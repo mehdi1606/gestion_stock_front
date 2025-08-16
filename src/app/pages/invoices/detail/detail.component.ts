@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { C } from '@fullcalendar/core/internal-common';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -12,12 +13,11 @@ import autoTable from 'jspdf-autotable';
 export class DetailComponent implements OnInit {
   breadCrumbItems: Array<{}>;
   orderDetail: any;
-
+  TotalHT:any;
   constructor(private route: ActivatedRoute) { }
-
   ngOnInit() {
     this.breadCrumbItems = [{ label: 'Factures' }, { label: 'Détails', active: true }];
-
+     this.TotalHT=this.orderDetail?.totalAmount/(1+0.2);
     this.route.paramMap.subscribe(params => {
       const orderId = params.get('id');
       if (orderId) {
@@ -27,26 +27,60 @@ export class DetailComponent implements OnInit {
   }
   isDiscountable(product: any): boolean {
     // Check if the product is in the Alimentaire or Cosmétique categories
-    return product.product.category === 'Alimentaire' || product.product.category === 'Cosmetique';
-}
+    // AND ensure it's not an Argan product
+    return (product.product.category === 'Alimentaire' ||
+            product.product.category === 'Cosmetique') &&
+           product.product.category !== 'Argan';
+  }
 
-calculateDiscount(product: any): number {
-    // Apply a 30% discount for eligible products
+  calculateDiscount(product: any): number {
+    // Only calculate discount if the product is discountable
     if (this.isDiscountable(product)) {
-        return product.product.price * 0.3; // 30% discount
+      const reductionPercentage = this.orderDetail?.reductionPercentage;
+
+      // Calculate the discount amount
+      const discount = (reductionPercentage / 100) * product.product.price;
+
+      // Return the discount amount
+      return discount;
     }
+
+    // If not discountable, return 0 (no discount)
     return 0;
-}
+  }
 
-calculateTotal(product: any): number {
-    const basePrice = product.product.price;
+  calculateTotalPriceAfterDiscount(product: any): number {
+    const price = product.product.price;
     const quantity = product.quantity;
-    const discount = this.calculateDiscount(product);
 
-    // Total after discount
-    const total = (basePrice - discount) * quantity;
-    return total;
+    // Only apply discount if the product is discountable
+    if (this.isDiscountable(product)) {
+      const reductionPercentage = this.orderDetail?.reductionPercentage;
+      const discount = (reductionPercentage / 100) * price;
+      const priceAfterDiscount = price - discount;
+      return priceAfterDiscount * quantity;
+    }
+
+    // If not discountable (Argan products), return original price * quantity
+    return price * quantity;
+  }
+
+// Method to calculate the Total amount (with or without TVA based on DocumentType)
+calculateTotal(product: any): number {
+  const basePrice = product.product.price;
+  const quantity = product.quantity;
+  const discount = this.calculateDiscount(product); // Apply discount dynamically
+
+  // Calculate Total after discount
+  const totalWithoutTVA = (basePrice - discount) * quantity;
+
+  // If DocumentType is FACTURE, apply TVA (e.g., 20%)
+  const tva = this.orderDetail?.documentType === 'FACTURE' ? totalWithoutTVA * 0.2 : 0;
+
+  const total = totalWithoutTVA + tva; // Add TVA if applicable
+  return total;
 }
+
 
   fetchOrderDetails(orderId: string) {
     axios.get(`http://localhost:8044/api/orders/${orderId}`)
@@ -79,62 +113,93 @@ calculateTotal(product: any): number {
     doc.setFillColor(colors.lightGray.r, colors.lightGray.g, colors.lightGray.b);
     doc.rect(0, 0, pageWidth, 90, 'F');
 
-    doc.addImage('assets/images/logo-light.png', 'PNG', pageWidth - 120, 30, 100, 50);
+    doc.addImage('assets/images/logo-dark.png', 'PNG', pageWidth - 180, 20, 150, 50);
 
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(colors.primary.r, colors.primary.g, colors.primary.b);
-    doc.text('Société de Fabrications', margin, 50);
-    doc.setFontSize(18);
-    doc.text('Produits Cosmétiques et Huiles', margin, 80);
+    doc.setFontSize(7);
+// Set font and color
+doc.setFont('helvetica', 'bold');
+doc.setTextColor(colors.primary.r, colors.primary.g, colors.primary.b);
 
-    // Invoice details
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Facture N°: ${this.orderDetail?.invoiceNumber || 'N/A'}`, margin, 120);
-    doc.text(`Date de la facture: ${this.orderDetail?.dueDate || 'N/A'}`, margin, 140);
+// Define margin and starting y-position
+const margins = 150;
+let yPosition = 25; // Start slightly lower for better alignment
 
-    // Client section
-    let currentY = 160;
-    doc.setFillColor(colors.lightGray.r, colors.lightGray.g, colors.lightGray.b);
-    doc.roundedRect(margin, currentY, pageWidth - margin * 2, 90, 5, 5, 'F');
+// Add text lines with improved spacing
+doc.text('Société de fabrication des produits cosmétiques - Extraction des huiles végétales', margins, yPosition, { align: 'center' });
+yPosition += 10; // More spacing
+doc.text('Emballage, étiquetage, packaging, vente', margins, yPosition, { align: 'center' });
+yPosition += 10; // More spacing
+doc.text('Attestation de déclaration ministre de la santé DMP', margins, yPosition, { align: 'center' });
+yPosition += 10; // More spacing
+doc.text('Attestation de ONSSA / ISO 22716', margins, yPosition, { align: 'center' });
+yPosition += 10; // More spacing
+doc.text('Zone industrielle Almajed Tanger / 212 539351084 / 212 666954809', margins, yPosition, { align: 'center' });
+yPosition += 10; // More spacing
+doc.text('WWW.ADAGUEN.COM Import/Export', margins, yPosition, { align: 'center' });
 
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(colors.primary.r, colors.primary.g, colors.primary.b);
-    doc.text('FACTURÉ À', margin + 10, currentY + 30);
+// Invoice details
+doc.setFontSize(12);
+doc.setFont('helvetica', 'normal');
+doc.setTextColor(0, 0, 0);
 
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Nom: ${this.orderDetail?.customer?.name || 'N/A'}`, margin + 10, currentY + 50);
-    doc.text(`Adresse: ${this.orderDetail?.customer?.localisation || 'N/A'}`, margin + 10, currentY + 65);
-    doc.text(`Téléphone: ${this.orderDetail?.customer?.tele || 'N/A'}`, margin + 10, currentY + 80);
+// Determine the type of document
+const documentType = this.orderDetail?.documentType === 'FACTURE' ? 'Facture' : 'Bon de livraison';
+const invoiceNumberText = `${documentType} N°: ${this.orderDetail?.invoiceNumber || 'N/A'}`;
+const dueDateText = `Tanger le : ${this.orderDetail?.dueDate || 'N/A'}`;
+
+doc.text(invoiceNumberText, margin, 120);
+doc.text(dueDateText, margin, 140);
+
+  // Client section
+let currentY = 160;
+const clientBoxWidth = 300; // Width for the client information box
+const clientStartX = pageWidth - margin - clientBoxWidth;
+
+doc.setFillColor(colors.lightGray.r, colors.lightGray.g, colors.lightGray.b);
+doc.roundedRect(clientStartX, currentY, clientBoxWidth, 90, 5, 5, 'F');
+
+doc.setFontSize(16);
+doc.setFont('helvetica', 'bold');
+doc.setTextColor(colors.primary.r, colors.primary.g, colors.primary.b);
+doc.text('Client', clientStartX + 10, currentY + 30);
+
+doc.setFontSize(12);
+doc.setFont('helvetica', 'normal');
+doc.setTextColor(0, 0, 0);
+doc.text(`Nom: ${this.orderDetail?.customer?.name || 'N/A'}`, clientStartX + 10, currentY + 50);
+doc.text(`ICE: ${this.orderDetail?.customer?.ice }`, clientStartX + 10, currentY + 65);
+doc.text(`Téléphone: ${this.orderDetail?.customer?.tele || 'N/A'}`, clientStartX + 10, currentY + 80);
+
 
     // Order summary
     currentY += 120;
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(colors.primary.r, colors.primary.g, colors.primary.b);
-    doc.text('RÉSUMÉ DE LA COMMANDE', margin, currentY);
 
-    // Updated table for PDF
-    autoTable(doc, {
-      startY: currentY + 20,
-      head: [['Article', 'Prix', 'Quantité',  'Total']],
-      body: this.orderDetail?.orderProducts?.map(product => {
-        const price = product.product.price;
-        const quantity = product.quantity;
-        const total = this.calculateTotal(product);
+  // Updated table for PDF
+let grandTotal = 0;  // Initialize a variable to accumulate the grand total
 
-        return [
-          `${product.product.nom} - ${product.product.description}`,
-          `${price} MAD`,
-          quantity,
-          `${total} MAD`
-        ];
-      }) || [],
+autoTable(doc, {
+  startY: currentY + 20,
+  head: [['Article', 'Prix', 'Quantité', 'Total']],
+  body: this.orderDetail?.orderProducts?.map(product => {
+    const price = product.product.price;
+    const quantity = product.quantity;
+    const reduct = this.orderDetail?.reductionPercentage;
+    const total = price * quantity;
+
+    grandTotal += total;  // Accumulate the total for each product
+
+    return [
+      `${product.product.nom} - ${product.product.description}`,
+      `${price} MAD`,
+      quantity,
+      `${total} MAD`
+    ];
+  }) || [],
+
+
       styles: {
         fontSize: 10,
         cellPadding: 8,
@@ -154,16 +219,80 @@ calculateTotal(product: any): number {
       margin: { left: margin, right: margin },
     });
 
-    let finalY = (doc as any).lastAutoTable.finalY + 30;
-    doc.setFillColor(colors.primary.r, colors.primary.g, colors.primary.b);
-    doc.roundedRect(pageWidth - 200, finalY, 180, 40, 5, 5, 'F');
+    // After the table, update the totals section
+let finalY = (doc as any).lastAutoTable.finalY + 30;
 
-    doc.setFontSize(14);
+// Set up styling for totals section
+const totalsStartX = pageWidth - 250; // Starting X position for totals section
+const labelWidth = 100;  // Width for labels
+const valueWidth = 130;  // Width for values
+const totalsStyle = {
+    fontSize: 11,
+    normalColor: [60, 60, 60] as [number, number, number],
+    primaryColor: { r: 34, g: 45, b: 85 },
+    secondaryColor: { r: 220, g: 150, b: 50 }
+};
+
+// Function to add total line with consistent styling
+function addTotalLine(label: string, value: string, y: number, isHighlighted: boolean = false) {
+    // Background for the entire line if highlighted
+    if (isHighlighted) {
+        doc.setFillColor(totalsStyle.primaryColor.r, totalsStyle.primaryColor.g, totalsStyle.primaryColor.b);
+        doc.roundedRect(totalsStartX, y - 15, labelWidth + valueWidth, 25, 3, 3, 'F');
+    }
+
+    // Label
+    doc.setFontSize(totalsStyle.fontSize);
+    doc.setFont('helvetica', isHighlighted ? 'bold' : 'normal');
+    doc.setTextColor(
+        isHighlighted ? 255 : totalsStyle.normalColor[0],
+        isHighlighted ? 255 : totalsStyle.normalColor[1],
+        isHighlighted ? 255 : totalsStyle.normalColor[2]
+    );
+    doc.text(label, totalsStartX, y);
+
+    // Value
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(colors.secondary.r, colors.secondary.g, colors.secondary.b);
-    const totalText = `TOTAL: ${this.orderDetail?.totalAmount || 'N/A'} MAD`;
-    doc.text(totalText, pageWidth - margin, finalY + 25, { align: 'right' });
+    doc.setTextColor(
+        isHighlighted ? 255 : totalsStyle.normalColor[0],
+        isHighlighted ? 255 : totalsStyle.normalColor[1],
+        isHighlighted ? 255 : totalsStyle.normalColor[2]
+    );
+    doc.text(value, totalsStartX + labelWidth + valueWidth, y, { align: 'right' });
+}
+ const remise=grandTotal-this.orderDetail?.totalAmount;
+if (this.orderDetail?.documentType === 'FACTURE') {
+    // Calculate values
+    const totalAmount = this.orderDetail?.totalAmount ?? 0;
+    const subtotalHT = totalAmount / 1.2;
+    const tvaAmount = subtotalHT * 0.2;
 
+    // Add separator line
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
+    doc.line(totalsStartX, finalY - 10, totalsStartX + labelWidth + valueWidth, finalY - 10);
+
+    // Add totals
+    if (this.orderDetail?.reductionPercentage !== 0.0) {
+      addTotalLine('Total sans remise  :', `${grandTotal.toFixed(2)} MAD`, finalY + 5);
+  }
+    addTotalLine('Total HT:', `${subtotalHT.toFixed(2)} MAD`, finalY + 30);
+    addTotalLine('TVA (20%):', `${tvaAmount.toFixed(2)} MAD`, finalY + 50);
+
+    // Add final total with highlight
+    addTotalLine('TOTAL TTC:', `${totalAmount.toFixed(2)} MAD`, finalY + 80, true);
+} else {
+    // For non-invoice documents, just show the total
+    if (this.orderDetail?.reductionPercentage !== 0.0) {
+
+      addTotalLine('Total sans remise  :', `${grandTotal.toFixed(2)} MAD`, finalY + 5);
+      addTotalLine('Remise   :', `${remise.toFixed(2)} MAD`, finalY + 20);
+  }
+    addTotalLine(' TOTAL:', `${this.orderDetail?.totalAmount.toFixed(2)} MAD`, finalY + 50, true);
+}
+
+// Update finalY for footer positioning
+finalY += 90;
     // Footer
     const footerY = doc.internal.pageSize.height - 70;
     doc.setDrawColor(colors.secondary.r, colors.secondary.g, colors.secondary.b);

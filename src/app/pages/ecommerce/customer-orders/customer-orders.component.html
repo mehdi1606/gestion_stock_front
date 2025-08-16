@@ -1,0 +1,71 @@
+<div class="container-fluid">
+  <!-- En-tête Nom du Client -->
+  <div class="customer-header d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ customerName }}</h2>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-warning me-2" (click)="archiveCustomerOrders()">
+        📦 Archiver les commandes payées
+      </button>
+      <button class="btn btn-secondary" (click)="showArchivedOrders()">
+        📋 Voir les commandes archivées
+      </button>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Montant Total</h5>
+          <p class="card-text">{{ totalAmount }} MAD</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card" (click)="showPaymentHistory()" style="cursor: pointer;">
+        <div class="card-body">
+          <h5 class="card-title">Montant Payé</h5>
+          <p class="card-text">{{ amountPaid }} MAD</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Montant Restant</h5>
+          <p class="card-text">{{ remainingAmount }} MAD</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle table-nowrap">
+      <thead>
+        <tr>
+          <th>N° Commande</th>
+          <th>N° Facture</th>
+          <th>Date</th>
+          <th>Montant Total</th>
+          <th>Montant Payé</th>
+          <th>Type de Document</th>
+          <th>Montant Restant</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of customerOrders">
+          <td>{{ order.id }}</td>
+          <td>{{ order.invoiceNumber }}</td>
+          <td>{{ order.dueDate }}</td>
+          <td>{{ order.totalAmount }}</td>
+          <td>{{ order.amountPaid }}</td>
+          <td>{{ order.documentType }}</td>
+          <td>{{ order.remainingAmount }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

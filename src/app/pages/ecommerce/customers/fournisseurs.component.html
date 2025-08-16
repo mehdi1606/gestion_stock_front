@@ -1,0 +1,541 @@
+<!-- Main Container -->
+<div class="container-fluid">
+  <!-- Page Title -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+        <h4 class="mb-sm-0">
+          <i class="mdi mdi-truck-delivery-outline me-2"></i>
+          Gestion des Fournisseurs
+        </h4>
+        <div class="page-title-right">
+          <button type="button" class="btn btn-outline-primary me-2" (click)="generateReport()">
+            <i class="mdi mdi-chart-line me-1"></i> Rapport
+          </button>
+          <button type="button" class="btn btn-outline-secondary me-2" (click)="exportData()">
+            <i class="mdi mdi-download me-1"></i> Exporter
+          </button>
+          <button type="button" class="btn btn-primary" (click)="openModal(addEditModal)">
+            <i class="mdi mdi-plus me-1"></i> Nouveau Fournisseur
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row">
+    <div class="col-xl-3 col-md-6">
+      <div class="card stats-card card-total">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-1">
+              <p class="text-truncate font-size-14 mb-2">Total Fournisseurs</p>
+              <h4 class="mb-2">{{ statistics.total }}</h4>
+            </div>
+            <div class="avatar-sm">
+              <span class="avatar-title bg-light text-primary rounded-3">
+                <i class="mdi mdi-account-group font-size-24"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card stats-card card-active">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-1">
+              <p class="text-truncate font-size-14 mb-2">Actifs</p>
+              <h4 class="mb-2">{{ statistics.actifs }}</h4>
+            </div>
+            <div class="avatar-sm">
+              <span class="avatar-title bg-light text-success rounded-3">
+                <i class="mdi mdi-check-circle font-size-24"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card stats-card card-inactive">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-1">
+              <p class="text-truncate font-size-14 mb-2">Inactifs</p>
+              <h4 class="mb-2">{{ statistics.inactifs }}</h4>
+            </div>
+            <div class="avatar-sm">
+              <span class="avatar-title bg-light text-danger rounded-3">
+                <i class="mdi mdi-pause-circle font-size-24"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="card stats-card card-locations">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-1">
+              <p class="text-truncate font-size-14 mb-2">Villes</p>
+              <h4 class="mb-2">{{ statistics.villes }}</h4>
+            </div>
+            <div class="avatar-sm">
+              <span class="avatar-title bg-light text-warning rounded-3">
+                <i class="mdi mdi-map-marker font-size-24"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filter -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row mb-2">
+            <div class="col-sm-4">
+              <div class="search-box me-2 mb-2 d-inline-block">
+                <div class="position-relative">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Rechercher un fournisseur..."
+                    [(ngModel)]="term"
+                    (input)="performSearch()"
+                  />
+                  <i class="bx bx-search-alt search-icon"></i>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-8">
+              <div class="text-sm-end">
+                <form [formGroup]="searchForm" class="d-inline-flex gap-2">
+                  <select formControlName="ville" class="form-select" (change)="applyFilters()">
+                    <option value="">Toutes les villes</option>
+                    <option *ngFor="let ville of villes" [value]="ville">{{ ville }}</option>
+                  </select>
+
+                  <select formControlName="pays" class="form-select" (change)="applyFilters()">
+                    <option value="">Tous les pays</option>
+                    <option *ngFor="let pay of pays" [value]="pay">{{ pay }}</option>
+                  </select>
+
+                  <select formControlName="status" class="form-select" (change)="applyFilters()">
+                    <option value="">Tous les statuts</option>
+                    <option value="true">Actif</option>
+                    <option value="false">Inactif</option>
+                  </select>
+
+                  <button type="button" class="btn btn-outline-secondary" (click)="clearFilters()">
+                    <i class="mdi mdi-filter-remove"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="dataTables_length">
+                <span class="text-muted">
+                  {{ filteredCount }} résultat(s) trouvé(s)
+                </span>
+                <div class="float-end">
+                  <label class="d-inline-flex align-items-center">
+                    Afficher
+                    <select class="form-select form-select-sm ms-1 me-1" (change)="changePageSize($event.target.value)">
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                    entrées
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Data Table -->
+  <div class="card">
+    <div class="card-body p-0">
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+      </div>
+
+      <!-- Simple Professional Table -->
+      <div *ngIf="!loading && hasData" class="table-responsive">
+        <table class="table table-striped mb-0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Code</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Ville</th>
+              <th>Pays</th>
+              <th>Délai</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fournisseur of fournisseurs; let i = index">
+              <td>{{ (currentPage * pageSize) + i + 1 }}</td>
+              <td>
+                <span class="badge bg-primary">{{ fournisseur.code }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar me-2">
+                    {{ fournisseur.nom.charAt(0).toUpperCase() }}
+                  </div>
+                  <strong>{{ fournisseur.nom }}</strong>
+                </div>
+              </td>
+              <td class="text-primary">{{ fournisseur.email }}</td>
+              <td>{{ fournisseur.telephone }}</td>
+              <td>
+                <i class="mdi mdi-map-marker text-muted me-1"></i>
+                {{ fournisseur.ville }}
+              </td>
+              <td>{{ fournisseur.pays }}</td>
+              <td>
+                <span class="badge"
+                      [class.bg-success]="(fournisseur.delaiLivraison || 0) <= 7"
+                      [class.bg-warning]="(fournisseur.delaiLivraison || 0) > 7 && (fournisseur.delaiLivraison || 0) <= 15"
+                      [class.bg-danger]="(fournisseur.delaiLivraison || 0) > 15">
+                  {{ fournisseur.delaiLivraison || 0 }} jour(s)
+                </span>
+              </td>
+              <td>
+                <span class="badge"
+                      [class.bg-success]="fournisseur.actif"
+                      [class.bg-secondary]="!fournisseur.actif">
+                  {{ fournisseur.actif ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button"
+                          class="btn btn-sm btn-outline-primary me-1"
+                          (click)="openModal(addEditModal, fournisseur)"
+                          title="Modifier">
+                    <i class="mdi mdi-pencil"></i>
+                  </button>
+
+                  <!-- <button type="button"
+                          class="btn btn-sm btn-outline-info me-1"
+                          (click)="duplicateFournisseur(fournisseur.id!)"
+                          title="Dupliquer">
+                    <i class="mdi mdi-content-copy"></i>
+                  </button> -->
+
+                  <button type="button"
+                          *ngIf="fournisseur.actif"
+                          class="btn btn-sm btn-outline-warning me-1"
+                          (click)="deleteFournisseur(fournisseur.id!)"
+                          title="Désactiver">
+                    <i class="mdi mdi-pause"></i>
+                  </button>
+
+                  <button type="button"
+                          *ngIf="!fournisseur.actif"
+                          class="btn btn-sm btn-outline-success me-1"
+                          (click)="reactivateFournisseur(fournisseur.id!)"
+                          title="Réactiver">
+                    <i class="mdi mdi-play"></i>
+                  </button>
+
+                  <!-- <button type="button"
+                          class="btn btn-sm btn-outline-secondary"
+                          (click)="viewDetails(fournisseur)"
+                          title="Voir détails">
+                    <i class="mdi mdi-eye"></i>
+                  </button> -->
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Data State -->
+      <div *ngIf="!loading && !hasData" class="text-center py-5">
+        <i class="mdi mdi-truck-delivery-outline" style="font-size: 3rem; color: #dee2e6;"></i>
+        <h5 class="mt-3 text-muted">Aucun fournisseur trouvé</h5>
+        <p class="text-muted">Commencez par ajouter votre premier fournisseur</p>
+        <button type="button" class="btn btn-primary" (click)="openModal(addEditModal)">
+          <i class="mdi mdi-plus me-1"></i> Ajouter un fournisseur
+        </button>
+      </div>
+
+      <!-- Simple Pagination -->
+      <div *ngIf="!loading && hasData && totalPages > 1" class="d-flex justify-content-between align-items-center p-3 border-top">
+        <div class="text-muted small">
+          {{ (currentPage * pageSize) + 1 }} à {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
+          sur {{ totalElements }} résultats
+        </div>
+
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 0">
+              <a class="page-link" href="javascript:void(0)" (click)="currentPage > 0 && goToPage(currentPage - 1)">
+                Précédent
+              </a>
+            </li>
+
+            <li *ngFor="let page of pages.slice(Math.max(0, currentPage - 2), Math.min(totalPages, currentPage + 3))"
+                class="page-item"
+                [class.active]="page === currentPage">
+              <a class="page-link" href="javascript:void(0)" (click)="goToPage(page)">
+                {{ page + 1 }}
+              </a>
+            </li>
+
+            <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+              <a class="page-link" href="javascript:void(0)" (click)="currentPage < totalPages - 1 && goToPage(currentPage + 1)">
+                Suivant
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<ng-template #addEditModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">
+      <i class="mdi mdi-truck-delivery-outline me-2"></i>
+      {{ isEditMode ? 'Modifier le Fournisseur' : 'Nouveau Fournisseur' }}
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modalRef?.hide()"></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="formData" (ngSubmit)="saveFournisseur()">
+      <div class="row">
+        <!-- Code and Name -->
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="code" class="form-label required">Code Fournisseur</label>
+            <input
+              type="text"
+              class="form-control"
+              id="code"
+              formControlName="code"
+              [class.is-invalid]="submitted && form['code'].errors"
+              placeholder="Ex: FOUR001"
+            />
+            <div *ngIf="submitted && form['code'].errors" class="invalid-feedback">
+              <span *ngIf="form['code'].errors?.['required']">Le code est obligatoire.</span>
+              <span *ngIf="form['code'].errors?.['minlength']">Le code doit contenir au moins 2 caractères.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="nom" class="form-label required">Nom du Fournisseur</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nom"
+              formControlName="nom"
+              [class.is-invalid]="submitted && form['nom'].errors"
+              placeholder="Ex: Société ABC"
+            />
+            <div *ngIf="submitted && form['nom'].errors" class="invalid-feedback">
+              <span *ngIf="form['nom'].errors?.['required']">Le nom est obligatoire.</span>
+              <span *ngIf="form['nom'].errors?.['minlength']">Le nom doit contenir au moins 2 caractères.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Email and Phone -->
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="email" class="form-label required">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              formControlName="email"
+              [class.is-invalid]="submitted && form['email'].errors"
+              placeholder="contact@fournisseur.com"
+            />
+            <div *ngIf="submitted && form['email'].errors" class="invalid-feedback">
+              <span *ngIf="form['email'].errors?.['required']">L'email est obligatoire.</span>
+              <span *ngIf="form['email'].errors?.['email']">Format d'email invalide.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="telephone" class="form-label required">Téléphone</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="telephone"
+              formControlName="telephone"
+              [class.is-invalid]="submitted && form['telephone'].errors"
+              placeholder="+212 6 12 34 56 78"
+            />
+            <div *ngIf="submitted && form['telephone'].errors" class="invalid-feedback">
+              Le téléphone est obligatoire.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="mb-3">
+        <label for="adresse" class="form-label required">Adresse</label>
+        <textarea
+          class="form-control"
+          id="adresse"
+          formControlName="adresse"
+          [class.is-invalid]="submitted && form['adresse'].errors"
+          rows="2"
+          placeholder="Adresse complète du fournisseur"
+        ></textarea>
+        <div *ngIf="submitted && form['adresse'].errors" class="invalid-feedback">
+          L'adresse est obligatoire.
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- City and Country -->
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="ville" class="form-label required">Ville</label>
+            <input
+              type="text"
+              class="form-control"
+              id="ville"
+              formControlName="ville"
+              [class.is-invalid]="submitted && form['ville'].errors"
+              placeholder="Ex: Casablanca"
+            />
+            <div *ngIf="submitted && form['ville'].errors" class="invalid-feedback">
+              La ville est obligatoire.
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="pays" class="form-label required">Pays</label>
+            <input
+              type="text"
+              class="form-control"
+              id="pays"
+              formControlName="pays"
+              [class.is-invalid]="submitted && form['pays'].errors"
+              placeholder="Ex: Maroc"
+            />
+            <div *ngIf="submitted && form['pays'].errors" class="invalid-feedback">
+              Le pays est obligatoire.
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="mb-3">
+            <label for="codePostal" class="form-label">Code Postal</label>
+            <input
+              type="text"
+              class="form-control"
+              id="codePostal"
+              formControlName="codePostal"
+              placeholder="Ex: 20000"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Payment Terms and Delivery Time -->
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="conditionsPaiement" class="form-label">Conditions de Paiement</label>
+            <select class="form-select" id="conditionsPaiement" formControlName="conditionsPaiement">
+              <option value="">Sélectionner...</option>
+              <option value="Comptant">Comptant</option>
+              <option value="30 jours">30 jours</option>
+              <option value="60 jours">60 jours</option>
+              <option value="90 jours">90 jours</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="delaiLivraison" class="form-label">Délai de Livraison (jours)</label>
+            <input
+              type="number"
+              class="form-control"
+              id="delaiLivraison"
+              formControlName="delaiLivraison"
+              [class.is-invalid]="submitted && form['delaiLivraison'].errors"
+              min="0"
+              placeholder="0"
+            />
+            <div *ngIf="submitted && form['delaiLivraison'].errors" class="invalid-feedback">
+              Le délai ne peut pas être négatif.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="actif"
+            formControlName="actif"
+          />
+          <label class="form-check-label" for="actif">
+            Fournisseur actif
+          </label>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modalRef?.hide()">
+          <i class="mdi mdi-close me-1"></i> Annuler
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          <i *ngIf="!loading" class="mdi mdi-check me-1"></i>
+          {{ isEditMode ? 'Modifier' : 'Ajouter' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>
