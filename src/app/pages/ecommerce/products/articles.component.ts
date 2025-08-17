@@ -567,7 +567,9 @@ export class ArticlesComponent implements OnInit {
   get Math() {
     return Math;
   }
-  // Add this to your articles.component.ts
+// ========================
+// SWEETALERT MODALS - REPLACE EXISTING METHODS
+// ========================
 
 async openAddEditModal(article?: Article) {
   this.submitted = false;
@@ -582,26 +584,373 @@ async openAddEditModal(article?: Article) {
   }
 
   const { value: formValues } = await Swal.fire({
-    title: `<div class="swal-custom-title">
-              <div class="swal-title-icon">
-                <i class="mdi mdi-package-variant-closed"></i>
+    title: this.isEditMode ? 'Modifier l\'Article' : 'Nouvel Article',
+    html: `
+      <style>
+        .swal-form-container {
+          text-align: left;
+          max-height: 60vh;
+          overflow-y: auto;
+        }
+        .swal-form-section {
+          background: white;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 20px;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .swal-section-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 16px;
+          padding: 12px 16px;
+          background: #f8fafc;
+          border-radius: 8px;
+          border-left: 4px solid #3b82f6;
+        }
+        .swal-section-title i {
+          width: 24px;
+          height: 24px;
+          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          color: white;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+        }
+        .swal-section-title h4 {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          color: #1f2937 !important;
+          margin: 0 !important;
+        }
+        .swal-form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+        }
+        .swal-three-columns {
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+        .swal-full-width {
+          grid-column: 1 / -1;
+        }
+        .swal-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .swal-form-label {
+          font-size: 13px !important;
+          font-weight: 600 !important;
+          color: #374151 !important;
+          margin-bottom: 4px !important;
+        }
+        .swal-form-label.required::after {
+          content: ' *';
+          color: #ef4444;
+        }
+        .swal-input-wrapper,
+        .swal-textarea-wrapper,
+        .swal-select-wrapper {
+          position: relative;
+        }
+        .swal-input-icon,
+        .swal-textarea-icon,
+        .swal-select-icon {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          font-size: 14px;
+          pointer-events: none;
+        }
+        .swal-textarea-icon {
+          top: 10px;
+          transform: none;
+        }
+        .swal-form-input,
+        .swal-form-textarea,
+        .swal-form-select {
+          width: 100% !important;
+          padding: 10px 36px 10px 12px !important;
+          border: 2px solid #e5e7eb !important;
+          border-radius: 8px !important;
+          font-size: 13px !important;
+          background: #f9fafb !important;
+          transition: all 0.2s ease !important;
+          font-family: inherit !important;
+          box-sizing: border-box !important;
+        }
+        .swal-form-input:focus,
+        .swal-form-textarea:focus,
+        .swal-form-select:focus {
+          outline: none !important;
+          border-color: #3b82f6 !important;
+          background: white !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+        .swal-form-textarea {
+          resize: vertical !important;
+          min-height: 60px !important;
+          padding-right: 12px !important;
+        }
+        .swal-form-select {
+          cursor: pointer !important;
+          appearance: none !important;
+        }
+        .swal-switch-wrapper {
+          margin-top: 8px;
+        }
+        .swal-switch-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: #f9fafb;
+          border-radius: 8px;
+          border: 1px solid #e5e7eb;
+        }
+        .swal-switch-input {
+          position: absolute !important;
+          opacity: 0 !important;
+          cursor: pointer !important;
+        }
+        .swal-switch-label {
+          display: flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+          cursor: pointer !important;
+        }
+        .swal-switch-text {
+          font-size: 13px !important;
+          font-weight: 500 !important;
+          color: #374151 !important;
+        }
+        .swal-switch-toggle {
+          width: 40px;
+          height: 20px;
+          background: #d1d5db;
+          border-radius: 20px;
+          position: relative;
+          cursor: pointer;
+        }
+        .swal-switch-toggle.active {
+          background: #10b981;
+        }
+        .swal-switch-handle {
+          width: 16px;
+          height: 16px;
+          background: white;
+          border-radius: 50%;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          transition: all 0.3s ease;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .swal-switch-toggle.active .swal-switch-handle {
+          transform: translateX(20px);
+        }
+        .swal-error-message {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          font-size: 11px !important;
+          color: #dc2626 !important;
+          background: #fef2f2 !important;
+          padding: 6px 10px !important;
+          border-radius: 6px !important;
+          border-left: 3px solid #ef4444 !important;
+          margin-top: 4px !important;
+        }
+        .swal-custom-popup {
+          border-radius: 16px !important;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+          border: none !important;
+        }
+        .swal-confirm-btn {
+          background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+          border: none !important;
+          border-radius: 8px !important;
+          padding: 10px 20px !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          color: white !important;
+        }
+        .swal-confirm-btn:hover {
+          background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+          transform: translateY(-1px) !important;
+        }
+        .swal-cancel-btn {
+          background: #f3f4f6 !important;
+          border: 1px solid #d1d5db !important;
+          border-radius: 8px !important;
+          padding: 10px 20px !important;
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          color: #374151 !important;
+        }
+        .swal-cancel-btn:hover {
+          background: #e5e7eb !important;
+        }
+      </style>
+      <div class="swal-form-container">
+        <!-- Section: Informations Générales -->
+        <div class="swal-form-section">
+          <div class="swal-section-title">
+            <i class="mdi mdi-information"></i>
+            <h4>Informations Générales</h4>
+          </div>
+          <div class="swal-form-grid">
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Code Article</label>
+              <div class="swal-input-wrapper">
+                <input type="text" id="code" class="swal-form-input" placeholder="Ex: ART001">
+                <i class="mdi mdi-barcode swal-input-icon"></i>
               </div>
-              <div>
-                <h3>${this.isEditMode ? 'Modifier l\'Article' : 'Nouvel Article'}</h3>
-                <p>${this.isEditMode ? 'Modifiez les informations de l\'article' : 'Ajoutez un nouvel article au système'}</p>
+              <div id="code-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Désignation</label>
+              <div class="swal-input-wrapper">
+                <input type="text" id="designation" class="swal-form-input" placeholder="Ex: Ordinateur portable">
+                <i class="mdi mdi-text swal-input-icon"></i>
               </div>
-            </div>`,
-    html: this.generateFormHTML(),
+              <div id="designation-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+          </div>
+          <div class="swal-form-group swal-full-width">
+            <label class="swal-form-label">Description</label>
+            <div class="swal-textarea-wrapper">
+              <textarea id="description" class="swal-form-textarea" placeholder="Description détaillée de l'article" rows="2"></textarea>
+              <i class="mdi mdi-text-box swal-textarea-icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Classification -->
+        <div class="swal-form-section">
+          <div class="swal-section-title">
+            <i class="mdi mdi-tag-multiple"></i>
+            <h4>Classification</h4>
+          </div>
+          <div class="swal-form-grid">
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Catégorie</label>
+              <div class="swal-select-wrapper">
+                <select id="categorie" class="swal-form-select">
+                  <option value="">Sélectionner une catégorie</option>
+                  <option value="Electronique">Electronique</option>
+                  <option value="Informatique">Informatique</option>
+                  <option value="Mobilier">Mobilier</option>
+                  <option value="Fournitures">Fournitures</option>
+                  ${this.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+                </select>
+                <i class="mdi mdi-chevron-down swal-select-icon"></i>
+              </div>
+              <div id="categorie-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Unité</label>
+              <div class="swal-select-wrapper">
+                <select id="unite" class="swal-form-select">
+                  <option value="">Sélectionner une unité</option>
+                  <option value="Pièce">Pièce</option>
+                  <option value="Kg">Kilogramme</option>
+                  <option value="Litre">Litre</option>
+                  <option value="Mètre">Mètre</option>
+                  <option value="Boîte">Boîte</option>
+                  <option value="Carton">Carton</option>
+                </select>
+                <i class="mdi mdi-chevron-down swal-select-icon"></i>
+              </div>
+              <div id="unite-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Prix et Stock -->
+        <div class="swal-form-section">
+          <div class="swal-section-title">
+            <i class="mdi mdi-currency-usd"></i>
+            <h4>Prix et Gestion de Stock</h4>
+          </div>
+          <div class="swal-form-grid swal-three-columns">
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Prix Unitaire (MAD)</label>
+              <div class="swal-input-wrapper">
+                <input type="number" id="prixUnitaire" class="swal-form-input" min="0" step="0.01" placeholder="0.00">
+                <i class="mdi mdi-currency-usd swal-input-icon"></i>
+              </div>
+              <div id="prixUnitaire-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Stock Minimum</label>
+              <div class="swal-input-wrapper">
+                <input type="number" id="stockMin" class="swal-form-input" min="0" placeholder="0">
+                <i class="mdi mdi-trending-down swal-input-icon"></i>
+              </div>
+              <div id="stockMin-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+            <div class="swal-form-group">
+              <label class="swal-form-label required">Stock Maximum</label>
+              <div class="swal-input-wrapper">
+                <input type="number" id="stockMax" class="swal-form-input" min="0" placeholder="0">
+                <i class="mdi mdi-trending-up swal-input-icon"></i>
+              </div>
+              <div id="stockMax-error" class="swal-error-message" style="display: none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Fournisseur et Statut -->
+        <div class="swal-form-section">
+          <div class="swal-section-title">
+            <i class="mdi mdi-account-group"></i>
+            <h4>Fournisseur et Statut</h4>
+          </div>
+          <div class="swal-form-grid">
+            <div class="swal-form-group">
+              <label class="swal-form-label">Fournisseur</label>
+              <div class="swal-select-wrapper">
+                <select id="fournisseurId" class="swal-form-select">
+                  <option value="">Aucun fournisseur assigné</option>
+                  ${this.fournisseurs.map(f => `<option value="${f.id}">${f.nom}</option>`).join('')}
+                </select>
+                <i class="mdi mdi-chevron-down swal-select-icon"></i>
+              </div>
+            </div>
+            <div class="swal-form-group">
+              <label class="swal-form-label">Statut</label>
+              <div class="swal-switch-wrapper">
+                <div class="swal-switch-container">
+                  <input type="checkbox" id="actif" class="swal-switch-input" checked>
+                  <label for="actif" class="swal-switch-label">
+                    <div class="swal-switch-toggle">
+                      <div class="swal-switch-handle"></div>
+                    </div>
+                    <span class="swal-switch-text">Article actif</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     showCancelButton: true,
     confirmButtonText: this.isEditMode ? 'Modifier' : 'Ajouter',
     cancelButtonText: 'Annuler',
-    width: '900px',
+    width: '800px',
     customClass: {
       popup: 'swal-custom-popup',
-      title: 'swal-custom-title-container',
-      htmlContainer: 'swal-custom-html',
-      confirmButton: 'swal-custom-confirm',
-      cancelButton: 'swal-custom-cancel'
+      confirmButton: 'swal-confirm-btn',
+      cancelButton: 'swal-cancel-btn'
     },
     didOpen: () => {
       this.setupFormValidation();
@@ -617,162 +966,234 @@ async openAddEditModal(article?: Article) {
   }
 }
 
-private generateFormHTML(): string {
-  return `
-    <div class="swal-form-container">
-      <!-- Section: Informations Générales -->
-      <div class="swal-form-section">
-        <div class="swal-section-title">
-          <i class="mdi mdi-information"></i>
-          <h4>Informations Générales</h4>
-        </div>
+// Enhanced view details with perfect styling
+async viewDetails(article: Article) {
+  try {
+    const response = await axios.get<ApiResponse<Article>>(`${this.apiUrl}/${article.id}`);
 
-        <div class="swal-form-grid">
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Code Article</label>
-            <div class="swal-input-wrapper">
-              <input type="text" id="code" class="swal-form-input" placeholder="Ex: ART001">
-              <i class="mdi mdi-barcode swal-input-icon"></i>
-            </div>
-            <div id="code-error" class="swal-error-message" style="display: none;"></div>
-          </div>
+    if (response.data.success) {
+      const details = response.data.data;
+      const stockStatus = this.getStockStatus(details);
+      const stockColor = this.stockColors[stockStatus];
 
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Désignation</label>
-            <div class="swal-input-wrapper">
-              <input type="text" id="designation" class="swal-form-input" placeholder="Ex: Ordinateur portable">
-              <i class="mdi mdi-text swal-input-icon"></i>
-            </div>
-            <div id="designation-error" class="swal-error-message" style="display: none;"></div>
-          </div>
-        </div>
-
-        <div class="swal-form-group swal-full-width">
-          <label class="swal-form-label">Description</label>
-          <div class="swal-textarea-wrapper">
-            <textarea id="description" class="swal-form-textarea" placeholder="Description détaillée de l'article" rows="3"></textarea>
-            <i class="mdi mdi-text-box swal-textarea-icon"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Classification -->
-      <div class="swal-form-section">
-        <div class="swal-section-title">
-          <i class="mdi mdi-tag-multiple"></i>
-          <h4>Classification</h4>
-        </div>
-
-        <div class="swal-form-grid">
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Catégorie</label>
-            <div class="swal-select-wrapper">
-              <select id="categorie" class="swal-form-select">
-                <option value="">Sélectionner une catégorie</option>
-                <option value="Electronique">Electronique</option>
-                <option value="Informatique">Informatique</option>
-                <option value="Mobilier">Mobilier</option>
-                <option value="Fournitures">Fournitures</option>
-              </select>
-              <i class="mdi mdi-chevron-down swal-select-icon"></i>
-            </div>
-            <div id="categorie-error" class="swal-error-message" style="display: none;"></div>
-          </div>
-
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Unité</label>
-            <div class="swal-select-wrapper">
-              <select id="unite" class="swal-form-select">
-                <option value="">Sélectionner une unité</option>
-                <option value="Pièce">Pièce</option>
-                <option value="Kg">Kilogramme</option>
-                <option value="Litre">Litre</option>
-                <option value="Mètre">Mètre</option>
-                <option value="Boîte">Boîte</option>
-                <option value="Carton">Carton</option>
-              </select>
-              <i class="mdi mdi-chevron-down swal-select-icon"></i>
-            </div>
-            <div id="unite-error" class="swal-error-message" style="display: none;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Prix et Stock -->
-      <div class="swal-form-section">
-        <div class="swal-section-title">
-          <i class="mdi mdi-currency-usd"></i>
-          <h4>Prix et Gestion de Stock</h4>
-        </div>
-
-        <div class="swal-form-grid swal-three-columns">
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Prix Unitaire (MAD)</label>
-            <div class="swal-input-wrapper">
-              <input type="number" id="prixUnitaire" class="swal-form-input" min="0" step="0.01" placeholder="0.00">
-              <i class="mdi mdi-currency-usd swal-input-icon"></i>
-            </div>
-            <div id="prixUnitaire-error" class="swal-error-message" style="display: none;"></div>
-          </div>
-
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Stock Minimum</label>
-            <div class="swal-input-wrapper">
-              <input type="number" id="stockMin" class="swal-form-input" min="0" placeholder="0">
-              <i class="mdi mdi-trending-down swal-input-icon"></i>
-            </div>
-            <div id="stockMin-error" class="swal-error-message" style="display: none;"></div>
-          </div>
-
-          <div class="swal-form-group">
-            <label class="swal-form-label required">Stock Maximum</label>
-            <div class="swal-input-wrapper">
-              <input type="number" id="stockMax" class="swal-form-input" min="0" placeholder="0">
-              <i class="mdi mdi-trending-up swal-input-icon"></i>
-            </div>
-            <div id="stockMax-error" class="swal-error-message" style="display: none;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Fournisseur et Statut -->
-      <div class="swal-form-section">
-        <div class="swal-section-title">
-          <i class="mdi mdi-account-group"></i>
-          <h4>Fournisseur et Statut</h4>
-        </div>
-
-        <div class="swal-form-grid">
-          <div class="swal-form-group">
-            <label class="swal-form-label">Fournisseur</label>
-            <div class="swal-select-wrapper">
-              <select id="fournisseurId" class="swal-form-select">
-                <option value="">Aucun fournisseur assigné</option>
-                ${this.fournisseurs.map(f => `<option value="${f.id}">${f.nom}</option>`).join('')}
-              </select>
-              <i class="mdi mdi-chevron-down swal-select-icon"></i>
-            </div>
-          </div>
-
-          <div class="swal-form-group">
-            <label class="swal-form-label">Statut</label>
-            <div class="swal-switch-wrapper">
-              <div class="swal-switch-container">
-                <input type="checkbox" id="actif" class="swal-switch-input" checked>
-                <label for="actif" class="swal-switch-label">
-                  <div class="swal-switch-toggle">
-                    <div class="swal-switch-handle"></div>
+      Swal.fire({
+        title: `${details.designation}`,
+        html: `
+          <style>
+            .swal-details-container {
+              text-align: left;
+              max-height: 60vh;
+              overflow-y: auto;
+            }
+            .swal-details-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+              gap: 20px;
+              margin-top: 20px;
+            }
+            .swal-detail-card {
+              background: white;
+              border: 1px solid #e5e7eb;
+              border-radius: 12px;
+              padding: 20px;
+              transition: all 0.2s ease;
+              position: relative;
+              overflow: hidden;
+            }
+            .swal-detail-card::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 4px;
+              background: var(--accent-gradient);
+            }
+            .swal-detail-card:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            }
+            .swal-detail-card.primary {
+              --accent-gradient: linear-gradient(135deg, #3b82f6, #2563eb);
+            }
+            .swal-detail-card.success {
+              --accent-gradient: linear-gradient(135deg, #10b981, #059669);
+            }
+            .swal-detail-card.info {
+              --accent-gradient: linear-gradient(135deg, #0ea5e9, #0284c7);
+            }
+            .swal-detail-header {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              margin-bottom: 16px;
+              padding-bottom: 12px;
+              border-bottom: 1px solid #f3f4f6;
+            }
+            .swal-detail-icon {
+              width: 36px;
+              height: 36px;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: var(--accent-gradient);
+              color: white;
+              font-size: 16px;
+            }
+            .swal-detail-header h4 {
+              font-size: 16px !important;
+              font-weight: 600 !important;
+              color: #1f2937 !important;
+              margin: 0 !important;
+            }
+            .swal-detail-content {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+            }
+            .swal-detail-item {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 10px 0;
+              border-bottom: 1px solid #f9fafb;
+            }
+            .swal-detail-item:last-child {
+              border-bottom: none;
+            }
+            .swal-detail-label {
+              font-size: 13px !important;
+              font-weight: 500 !important;
+              color: #6b7280 !important;
+            }
+            .swal-detail-value {
+              font-size: 13px !important;
+              font-weight: 600 !important;
+              color: #111827 !important;
+              text-align: right !important;
+            }
+            .swal-detail-value.highlight {
+              color: #2563eb !important;
+            }
+            .swal-detail-value.success {
+              color: #059669 !important;
+            }
+            .swal-detail-value.warning {
+              color: #d97706 !important;
+            }
+            .swal-detail-value.danger {
+              color: #dc2626 !important;
+            }
+            .swal-detail-value.secondary {
+              color: #6b7280 !important;
+            }
+            .swal-detail-value.info {
+              color: #0284c7 !important;
+            }
+            .swal-details-popup {
+              border-radius: 16px !important;
+              box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+              border: none !important;
+            }
+          </style>
+          <div class="swal-details-container">
+            <div class="swal-details-grid">
+              <div class="swal-detail-card primary">
+                <div class="swal-detail-header">
+                  <div class="swal-detail-icon">
+                    <i class="mdi mdi-information"></i>
                   </div>
-                  <span class="swal-switch-text">Article actif</span>
-                </label>
+                  <h4>Informations Générales</h4>
+                </div>
+                <div class="swal-detail-content">
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Code:</span>
+                    <span class="swal-detail-value highlight">${details.code}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Description:</span>
+                    <span class="swal-detail-value">${details.description || 'N/A'}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Catégorie:</span>
+                    <span class="swal-detail-value">${details.categorie}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Unité:</span>
+                    <span class="swal-detail-value">${details.unite}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="swal-detail-card success">
+                <div class="swal-detail-header">
+                  <div class="swal-detail-icon">
+                    <i class="mdi mdi-currency-usd"></i>
+                  </div>
+                  <h4>Prix & Stock</h4>
+                </div>
+                <div class="swal-detail-content">
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Prix Unitaire:</span>
+                    <span class="swal-detail-value highlight">${details.prixUnitaire} MAD</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Stock Actuel:</span>
+                    <span class="swal-detail-value ${stockColor}">${details.stockActuel || 0}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Stock Min/Max:</span>
+                    <span class="swal-detail-value">${details.stockMin} / ${details.stockMax}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Statut Stock:</span>
+                    <span class="swal-detail-value ${stockColor}">${stockStatus.toUpperCase()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="swal-detail-card info">
+                <div class="swal-detail-header">
+                  <div class="swal-detail-icon">
+                    <i class="mdi mdi-account-group"></i>
+                  </div>
+                  <h4>Fournisseur & Statut</h4>
+                </div>
+                <div class="swal-detail-content">
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Fournisseur:</span>
+                    <span class="swal-detail-value">${details.fournisseurNom || 'Non assigné'}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Statut:</span>
+                    <span class="swal-detail-value ${details.actif ? 'success' : 'secondary'}">${details.actif ? 'Actif' : 'Inactif'}</span>
+                  </div>
+                  <div class="swal-detail-item">
+                    <span class="swal-detail-label">Créé le:</span>
+                    <span class="swal-detail-value">${details.dateCreation ? new Date(details.dateCreation).toLocaleDateString('fr-FR') : 'N/A'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  `;
+        `,
+        icon: undefined,
+        confirmButtonText: 'Fermer',
+        confirmButtonColor: '#3b82f6',
+        width: '700px',
+        customClass: {
+          popup: 'swal-details-popup'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching details:', error);
+    this.showError('Erreur lors du chargement des détails');
+  }
 }
+
+// ADD THESE NEW HELPER METHODS
 
 private setupFormValidation(): void {
   const inputs = ['code', 'designation', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax'];
@@ -952,126 +1373,4 @@ private async saveArticleFromSwal(formValues: any): Promise<void> {
     this.loading = false;
   }
 }
-
-// Enhanced view details with perfect styling
-async viewDetails(article: Article) {
-  try {
-    const response = await axios.get<ApiResponse<Article>>(`${this.apiUrl}/${article.id}`);
-
-    if (response.data.success) {
-      const details = response.data.data;
-      const stockStatus = this.getStockStatus(details);
-      const stockColor = this.stockColors[stockStatus];
-
-      Swal.fire({
-        title: `<div class="swal-details-title">
-                  <div class="swal-details-icon">
-                    <i class="mdi mdi-eye"></i>
-                  </div>
-                  <div>
-                    <h3>${details.designation}</h3>
-                    <p>Détails de l'article</p>
-                  </div>
-                </div>`,
-        html: `
-          <div class="swal-details-container">
-            <div class="swal-details-grid">
-              <div class="swal-detail-card primary">
-                <div class="swal-detail-header">
-                  <div class="swal-detail-icon">
-                    <i class="mdi mdi-information"></i>
-                  </div>
-                  <h4>Informations Générales</h4>
-                </div>
-                <div class="swal-detail-content">
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Code:</span>
-                    <span class="swal-detail-value highlight">${details.code}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Description:</span>
-                    <span class="swal-detail-value">${details.description || 'N/A'}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Catégorie:</span>
-                    <span class="swal-detail-value">${details.categorie}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Unité:</span>
-                    <span class="swal-detail-value">${details.unite}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="swal-detail-card success">
-                <div class="swal-detail-header">
-                  <div class="swal-detail-icon">
-                    <i class="mdi mdi-currency-usd"></i>
-                  </div>
-                  <h4>Prix & Stock</h4>
-                </div>
-                <div class="swal-detail-content">
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Prix Unitaire:</span>
-                    <span class="swal-detail-value highlight">${details.prixUnitaire} MAD</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Stock Actuel:</span>
-                    <span class="swal-detail-value ${stockColor}">${details.stockActuel || 0}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Stock Min/Max:</span>
-                    <span class="swal-detail-value">${details.stockMin} / ${details.stockMax}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Statut Stock:</span>
-                    <span class="swal-detail-value ${stockColor}">${stockStatus.toUpperCase()}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="swal-detail-card info">
-                <div class="swal-detail-header">
-                  <div class="swal-detail-icon">
-                    <i class="mdi mdi-account-group"></i>
-                  </div>
-                  <h4>Fournisseur & Statut</h4>
-                </div>
-                <div class="swal-detail-content">
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Fournisseur:</span>
-                    <span class="swal-detail-value">${details.fournisseurNom || 'Non assigné'}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Statut:</span>
-                    <span class="swal-detail-value ${details.actif ? 'success' : 'secondary'}">${details.actif ? 'Actif' : 'Inactif'}</span>
-                  </div>
-                  <div class="swal-detail-item">
-                    <span class="swal-detail-label">Créé le:</span>
-                    <span class="swal-detail-value">${details.dateCreation ? new Date(details.dateCreation).toLocaleDateString('fr-FR') : 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `,
-        icon: undefined,
-        confirmButtonText: 'Fermer',
-        confirmButtonColor: '#6c63ff',
-        width: '800px',
-        customClass: {
-          popup: 'swal-details-popup',
-          title: 'swal-details-title-container',
-          htmlContainer: 'swal-details-html',
-          confirmButton: 'swal-details-confirm'
-        }
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching details:', error);
-    this.showError('Erreur lors du chargement des détails');
-  }
-}
-
-
 }

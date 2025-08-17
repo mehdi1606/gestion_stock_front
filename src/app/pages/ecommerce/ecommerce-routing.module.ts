@@ -3,20 +3,20 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { ArticlesComponent } from './products/articles.component';
-import { CartComponent } from './cart/cart.component';
 
-import { OrdersComponent } from './orders/orders.component';
 import { CustomerOrdersComponent } from './customer-orders/customer-orders.component';
+import { StockInventoryComponent } from './stock-inventory/stock-inventory.component';
+import { StockMovementsComponent } from './orders/stock-movements.component';
 
 const routes: Routes = [
-    {
-        path: 'articles',
-        component: ArticlesComponent
-    },
+      {
+          path: 'articles',
+          component: ArticlesComponent
+      },
     { path: 'customer-orders/:customerId', component: CustomerOrdersComponent },
     {
-        path: 'cart',
-        component: CartComponent
+        path: 'Inventory',
+        component: StockInventoryComponent
     },
 
     {
@@ -24,8 +24,8 @@ const routes: Routes = [
         component: FournisseursComponent
     },
     {
-        path: 'orders',
-          component: OrdersComponent
+        path: 'Stock',
+          component: StockMovementsComponent
     }
 ];
 

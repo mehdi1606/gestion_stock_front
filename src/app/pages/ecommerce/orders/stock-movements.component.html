@@ -1,0 +1,938 @@
+<div class="stock-movements-container">
+  <!-- Header avec statistiques d'aujourd'hui -->
+  <div class="header-section">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+      <h1 class="page-title d-flex align-items-center">
+        <i class="fas fa-exchange-alt me-2"></i>
+        Mouvements de Stock
+      </h1>
+      <div class="header-actions">
+        <button class="btn btn-primary me-2" (click)="openAddMovementDialog()">
+          <i class="fas fa-plus me-1"></i>
+          Nouveau Mouvement
+        </button>
+        <button class="btn btn-outline-secondary me-2" (click)="openBatchOperationDialog()">
+          <i class="fas fa-list me-1"></i>
+          Opérations en Lot
+        </button>
+        <button class="btn btn-outline-secondary me-2" (click)="generateReport()">
+          <i class="fas fa-chart-bar me-1"></i>
+          Rapport
+        </button>
+        <button class="btn btn-outline-secondary" (click)="exportMovements()">
+          <i class="fas fa-download me-1"></i>
+          Exporter
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistiques d'aujourd'hui -->
+    <div class="today-stats row mb-4">
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card total h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon me-3">
+              <i class="fas fa-calendar-day text-primary"></i>
+            </div>
+            <div class="stat-content">
+              <h3 class="mb-0">{{ todayStats.totalMovements }}</h3>
+              <p class="mb-0 text-muted">Mouvements Aujourd'hui</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card entries h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon me-3">
+              <i class="fas fa-plus-circle text-success"></i>
+            </div>
+            <div class="stat-content">
+              <h3 class="mb-0">{{ todayStats.entries }}</h3>
+              <p class="mb-0 text-muted">Entrées</p>
+              <small class="text-success">{{ formatCurrency(todayStats.totalEntryValue) }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card exits h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon me-3">
+              <i class="fas fa-minus-circle text-danger"></i>
+            </div>
+            <div class="stat-content">
+              <h3 class="mb-0">{{ todayStats.exits }}</h3>
+              <p class="mb-0 text-muted">Sorties</p>
+              <small class="text-danger">{{ formatCurrency(todayStats.totalExitValue) }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stat-card balance h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon me-3">
+              <i class="fas fa-balance-scale text-info"></i>
+            </div>
+            <div class="stat-content">
+              <h3 class="mb-0">{{ formatCurrency(todayStats.totalEntryValue - todayStats.totalExitValue) }}</h3>
+              <p class="mb-0 text-muted">Solde Net</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section de recherche et filtres -->
+  <div class="card search-section mb-4">
+    <div class="card-body">
+      <div class="search-container">
+        <!-- Recherche textuelle -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <input type="text"
+                     class="form-control"
+                     [(ngModel)]="searchText"
+                     (input)="onSearchTextChange($any($event.target).value || '')"
+                     placeholder="Rechercher: Code article, numéro bon, client...">
+              <span class="input-group-text">
+                <i class="fas fa-search"></i>
+              </span>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <!-- Boutons de filtrage rapide -->
+            <div class="btn-group" role="group">
+              <input type="radio" class="btn-check" name="quickFilter" id="all" value="all"
+                     [checked]="quickFilter === 'all'" (change)="onQuickFilterRadioChange($event)">
+              <label class="btn btn-outline-primary" for="all">Tous</label>
+
+              <input type="radio" class="btn-check" name="quickFilter" id="entries" value="entries"
+                     [checked]="quickFilter === 'entries'" (change)="onQuickFilterRadioChange($event)">
+              <label class="btn btn-outline-success" for="entries">Entrées</label>
+
+              <input type="radio" class="btn-check" name="quickFilter" id="exits" value="exits"
+                     [checked]="quickFilter === 'exits'" (change)="onQuickFilterRadioChange($event)">
+              <label class="btn btn-outline-danger" for="exits">Sorties</label>
+
+              <input type="radio" class="btn-check" name="quickFilter" id="today" value="today"
+                     [checked]="quickFilter === 'today'" (change)="onQuickFilterRadioChange($event)">
+              <label class="btn btn-outline-info" for="today">Aujourd'hui</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton recherche avancée -->
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                    id="advancedSearchDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-filter me-1"></i>
+              Recherche Avancée
+            </button>
+            <div class="dropdown-menu p-3" aria-labelledby="advancedSearchDropdown" style="width: 500px;">
+              <form [formGroup]="searchForm" (ngSubmit)="performAdvancedSearch()">
+                <h6 class="dropdown-header">Recherche Avancée</h6>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Type de mouvement</label>
+                    <select class="form-select" formControlName="typeMouvement">
+                      <option value="">Tous</option>
+                      <option *ngFor="let type of typeMouvementOptions" [value]="type">
+                        {{ type }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Article</label>
+                    <select class="form-select" formControlName="articleId">
+                      <option value="">Tous</option>
+                      <option *ngFor="let article of articles; trackBy: trackByArticleId" [value]="article.id">
+                        {{ article.code }} - {{ article.nom || article.designation }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Date début</label>
+                    <input type="date" class="form-control" formControlName="dateDebut">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Date fin</label>
+                    <input type="date" class="form-control" formControlName="dateFin">
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Fournisseur</label>
+                    <select class="form-select" formControlName="fournisseurId">
+                      <option value="">Tous</option>
+                      <option *ngFor="let fournisseur of fournisseurs; trackBy: trackByFournisseurId" [value]="fournisseur.id">
+                        {{ fournisseur.nom }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Client</label>
+                    <input type="text" class="form-control" formControlName="client" placeholder="Nom du client">
+                  </div>
+                </div>
+
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Numéro de bon</label>
+                    <input type="text" class="form-control" formControlName="numeroBon" placeholder="Numéro de bon">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Numéro de facture</label>
+                    <input type="text" class="form-control" formControlName="numeroFacture" placeholder="Numéro de facture">
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-secondary me-2" (click)="clearSearch()">Effacer</button>
+                  <button type="submit" class="btn btn-primary">Rechercher</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="search-results" *ngIf="searchText">
+            <button class="btn btn-link" (click)="clearSearch()">
+              <i class="fas fa-times me-1"></i>
+              Effacer la recherche
+            </button>
+            <span class="text-muted">{{ totalElements }} résultat(s) trouvé(s)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tableau des mouvements -->
+  <div class="card table-section">
+    <div class="card-body">
+      <div class="table-container position-relative">
+        <!-- Loading spinner -->
+        <div class="loading-overlay d-flex justify-content-center align-items-center position-absolute w-100 h-100"
+             *ngIf="loading" style="z-index: 10; background: rgba(255,255,255,0.8);">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover movements-table">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="sortable" (click)="onSortChange('dateMouvement')" style="cursor: pointer;">
+                  Date
+                  <i class="fas {{ getSortIcon('dateMouvement') }} ms-1"></i>
+                </th>
+                <th scope="col">Type</th>
+                <th scope="col">Code</th>
+                <th scope="col">Article</th>
+                <th scope="col" class="sortable" (click)="onSortChange('quantite')" style="cursor: pointer;">
+                  Quantité
+                  <i class="fas {{ getSortIcon('quantite') }} ms-1"></i>
+                </th>
+                <th scope="col">Prix Unit.</th>
+                <th scope="col">Valeur Total</th>
+                <th scope="col">Fournisseur</th>
+                <th scope="col">Client</th>
+                <th scope="col">N° Bon</th>
+                <th scope="col">Stock Avant</th>
+                <th scope="col">Stock Après</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let movement of movements; trackBy: trackByMovementId"
+                  [class.table-active]="selectedMovement?.id === movement.id"
+                  (click)="viewMovementDetails(movement)"
+                  style="cursor: pointer;">
+
+                <td>
+                  <div class="date-cell">
+                    <div class="fw-bold">{{ formatDate(movement.dateMouvement) }}</div>
+                    <small class="text-muted">{{ formatDateTime(movement.dateMouvement) | date:'HH:mm' }}</small>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="badge"
+                        [ngClass]="'bg-' + getMovementTypeColor(movement.typeMouvement)">
+                    <i class="fas {{ getMovementTypeIcon(movement.typeMouvement) }} me-1"></i>
+                    {{ movement.typeMouvement }}
+                  </span>
+                </td>
+
+                <td>
+                  <code class="text-primary">{{ movement.articleCode }}</code>
+                </td>
+
+                <td>
+                  <div class="d-flex align-items-center">
+                    <span class="article-name">{{ movement.articleNom || movement.articleDesignation }}</span>
+                    <button class="btn btn-sm btn-outline-secondary ms-2"
+                            (click)="getArticleMovementHistory(movement.articleId); $event.stopPropagation()"
+                            title="Voir l'historique de cet article">
+                      <i class="fas fa-history"></i>
+                    </button>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="quantity-cell"
+                       [class.text-success]="movement.typeMouvement === TypeMouvement.ENTREE"
+                       [class.text-danger]="movement.typeMouvement === TypeMouvement.SORTIE">
+                    <span *ngIf="movement.typeMouvement === TypeMouvement.ENTREE">+</span>
+                    <span *ngIf="movement.typeMouvement === TypeMouvement.SORTIE">-</span>
+                    <span class="fw-bold">{{ formatNumber(movement.quantite) }}</span>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="text-nowrap">{{ formatCurrency(movement.prixUnitaire) }}</span>
+                </td>
+
+                <td>
+                  <span class="fw-bold text-nowrap">{{ formatCurrency(movement.valeurTotale) }}</span>
+                </td>
+
+                <td>
+                  <span>{{ movement.fournisseurNom || '-' }}</span>
+                </td>
+
+                <td>
+                  <span>{{ movement.client || '-' }}</span>
+                </td>
+
+                <td>
+                  <span>{{ movement.numeroBon || '-' }}</span>
+                </td>
+
+                <td>
+                  <span class="text-muted">{{ formatNumber(movement.stockAvant) }}</span>
+                </td>
+
+                <td>
+                  <span class="fw-bold">{{ formatNumber(movement.stockApres) }}</span>
+                </td>
+
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary"
+                            (click)="viewMovementDetails(movement); $event.stopPropagation()"
+                            title="Voir les détails">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <div class="dropdown">
+                      <button class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+                              type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                              (click)="$event.stopPropagation()">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" (click)="editMovement(movement); $event.preventDefault()">
+                          <i class="fas fa-edit me-2"></i>Modifier</a></li>
+                        <li><a class="dropdown-item" href="#" (click)="printMovementDetails(movement); $event.preventDefault()">
+                          <i class="fas fa-print me-2"></i>Imprimer</a></li>
+                        <li><a class="dropdown-item" href="#" (click)="duplicateMovement(movement); $event.preventDefault()">
+                          <i class="fas fa-copy me-2"></i>Dupliquer</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" (click)="deleteMovement(movement); $event.preventDefault()">
+                          <i class="fas fa-trash me-2"></i>Annuler</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Message quand pas de données -->
+        <div class="no-data text-center py-5" *ngIf="!loading && movements.length === 0">
+          <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+          <h3 class="text-muted">Aucun mouvement trouvé</h3>
+          <p class="text-muted">Aucun mouvement ne correspond à vos critères de recherche.</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Pagination des mouvements" *ngIf="totalElements > 0">
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div class="text-muted">
+            Affichage de {{ (currentPage * pageSize) + 1 }} à
+            {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
+            sur {{ totalElements }} mouvements
+          </div>
+
+          <div class="d-flex align-items-center">
+            <select class="form-select form-select-sm me-3" style="width: auto;"
+                    [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+              <option [value]="10">10 par page</option>
+              <option [value]="20">20 par page</option>
+              <option [value]="50">50 par page</option>
+              <option [value]="100">100 par page</option>
+            </select>
+
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <a class="page-link" (click)="goToPage(0)" style="cursor: pointer;"
+                   [class.disabled]="currentPage === 0">
+                  <i class="fas fa-angle-double-left"></i>
+                </a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === 0">
+                <a class="page-link" (click)="goToPage(currentPage - 1)" style="cursor: pointer;"
+                   [class.disabled]="currentPage === 0">
+                  <i class="fas fa-angle-left"></i>
+                </a>
+              </li>
+
+              <li class="page-item"
+                  *ngFor="let page of getVisiblePages()"
+                  [class.active]="page === currentPage">
+                <a class="page-link" (click)="goToPage(page)" style="cursor: pointer;">{{ page + 1 }}</a>
+              </li>
+
+              <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                <a class="page-link" (click)="goToPage(currentPage + 1)" style="cursor: pointer;"
+                   [class.disabled]="currentPage >= totalPages - 1">
+                  <i class="fas fa-angle-right"></i>
+                </a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage >= totalPages - 1">
+                <a class="page-link" (click)="goToPage(totalPages - 1)" style="cursor: pointer;"
+                   [class.disabled]="currentPage >= totalPages - 1">
+                  <i class="fas fa-angle-double-right"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<!-- Modal pour ajouter un mouvement -->
+<ng-template #addMovementModal>
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fas fa-plus me-2"></i>
+      Nouveau Mouvement de Stock
+    </h5>
+    <button type="button" class="btn-close" (click)="addMovementModalRef?.hide()" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="movementForm" class="movement-form" (ngSubmit)="saveMovement()">
+      <!-- Type de mouvement -->
+      <div class="mb-3">
+        <label class="form-label">Type de mouvement *</label>
+        <select class="form-select" formControlName="typeMouvement" required
+                [class.is-invalid]="movementForm.get('typeMouvement')?.invalid && movementForm.get('typeMouvement')?.touched">
+          <option value="">Sélectionnez un type</option>
+          <option *ngFor="let type of typeMouvementOptions" [value]="type">
+            {{ type }}
+          </option>
+        </select>
+        <div class="invalid-feedback" *ngIf="movementForm.get('typeMouvement')?.hasError('required') && movementForm.get('typeMouvement')?.touched">
+          Le type de mouvement est requis
+        </div>
+      </div>
+
+      <!-- Article et quantité -->
+      <div class="row mb-3">
+        <div class="col-md-8">
+          <label class="form-label">Article *</label>
+          <select class="form-select" formControlName="articleId" required
+                  [class.is-invalid]="movementForm.get('articleId')?.invalid && movementForm.get('articleId')?.touched">
+            <option value="">Sélectionnez un article</option>
+            <option *ngFor="let article of articles; trackBy: trackByArticleId" [value]="article.id">
+              {{ article.code }} - {{ article.nom || article.designation }}
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="movementForm.get('articleId')?.hasError('required') && movementForm.get('articleId')?.touched">
+            L'article est requis
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Quantité *</label>
+          <input type="number" class="form-control" formControlName="quantite" required min="1"
+                 [class.is-invalid]="movementForm.get('quantite')?.invalid && movementForm.get('quantite')?.touched">
+          <div class="invalid-feedback" *ngIf="movementForm.get('quantite')?.hasError('required') && movementForm.get('quantite')?.touched">
+            La quantité est requise
+          </div>
+          <div class="invalid-feedback" *ngIf="movementForm.get('quantite')?.hasError('min') && movementForm.get('quantite')?.touched">
+            La quantité doit être positive
+          </div>
+        </div>
+      </div>
+
+      <!-- Prix unitaire et fournisseur (pour les entrées) -->
+      <div class="row mb-3" *ngIf="movementForm.get('typeMouvement')?.value === TypeMouvement.ENTREE">
+        <div class="col-md-6">
+          <label class="form-label">Prix unitaire *</label>
+          <div class="input-group">
+            <input type="number" class="form-control" formControlName="prixUnitaire" min="0" step="0.01"
+                   [class.is-invalid]="movementForm.get('prixUnitaire')?.invalid && movementForm.get('prixUnitaire')?.touched">
+            <span class="input-group-text">MAD</span>
+          </div>
+          <div class="invalid-feedback" *ngIf="movementForm.get('prixUnitaire')?.hasError('required') && movementForm.get('prixUnitaire')?.touched">
+            Le prix unitaire est requis pour les entrées
+          </div>
+          <div class="invalid-feedback" *ngIf="movementForm.get('prixUnitaire')?.hasError('min') && movementForm.get('prixUnitaire')?.touched">
+            Le prix unitaire doit être positif
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Fournisseur</label>
+          <select class="form-select" formControlName="fournisseurId">
+            <option value="">Aucun</option>
+            <option *ngFor="let fournisseur of fournisseurs; trackBy: trackByFournisseurId" [value]="fournisseur.id">
+              {{ fournisseur.nom }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Client (pour les sorties) -->
+      <div class="mb-3" *ngIf="movementForm.get('typeMouvement')?.value === TypeMouvement.SORTIE">
+        <label class="form-label">Client</label>
+        <input type="text" class="form-control" formControlName="client" placeholder="Nom du client">
+      </div>
+
+      <!-- Numéros de documents -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Numéro de bon</label>
+          <input type="text" class="form-control" formControlName="numeroBon" placeholder="Bon de livraison/réception">
+        </div>
+
+        <div class="col-md-6" *ngIf="movementForm.get('typeMouvement')?.value === TypeMouvement.ENTREE">
+          <label class="form-label">Numéro de facture</label>
+          <input type="text" class="form-control" formControlName="numeroFacture" placeholder="Facture fournisseur">
+        </div>
+      </div>
+
+      <!-- Date et utilisateur -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Date du mouvement *</label>
+          <input type="date" class="form-control" formControlName="dateMouvement" required
+                 [class.is-invalid]="movementForm.get('dateMouvement')?.invalid && movementForm.get('dateMouvement')?.touched">
+          <div class="invalid-feedback" *ngIf="movementForm.get('dateMouvement')?.hasError('required') && movementForm.get('dateMouvement')?.touched">
+            La date est requise
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Utilisateur</label>
+          <input type="text" class="form-control" formControlName="utilisateur" placeholder="Nom de l'utilisateur">
+        </div>
+      </div>
+
+      <!-- Motif et observations -->
+      <div class="mb-3">
+        <label class="form-label">Motif</label>
+        <input type="text" class="form-control" formControlName="motif" placeholder="Motif du mouvement">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Observations</label>
+        <textarea class="form-control" formControlName="observations" rows="3" placeholder="Observations complémentaires"></textarea>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="addMovementModalRef?.hide()">Annuler</button>
+    <button type="button" class="btn btn-primary"
+            (click)="saveMovement()"
+            [disabled]="movementForm.invalid || loading">
+      <span class="spinner-border spinner-border-sm me-2" *ngIf="loading"></span>
+      <span *ngIf="!loading">Enregistrer</span>
+      <span *ngIf="loading">Enregistrement...</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal pour les détails d'un mouvement -->
+<ng-template #movementDetailsModal>
+  <div class="modal-header">
+    <h5 class="modal-title" *ngIf="selectedMovement">
+      <i class="fas fa-eye me-2"></i>
+      Détails du Mouvement #{{ selectedMovement.id }}
+    </h5>
+    <button type="button" class="btn-close" (click)="movementDetailsModalRef?.hide()" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body" *ngIf="selectedMovement">
+    <!-- En-tête avec type et statut -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <span class="badge fs-6"
+            [ngClass]="'bg-' + getMovementTypeColor(selectedMovement.typeMouvement)">
+        <i class="fas me-1"
+           [ngClass]="getMovementTypeIcon(selectedMovement.typeMouvement)"></i>
+        {{ selectedMovement.typeMouvement }}
+      </span>
+      <span class="text-muted">{{ formatDateTime(selectedMovement.dateMouvement) }}</span>
+    </div>
+
+    <!-- Informations principales -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0">Informations Principales</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-2">
+            <strong>Article :</strong>
+            <span class="ms-2">{{ selectedMovement.articleCode }} - {{ selectedMovement.articleNom || selectedMovement.articleDesignation }}</span>
+          </div>
+          <div class="col-md-6 mb-2">
+            <strong>Quantité :</strong>
+            <span class="ms-2"
+                  [class.text-success]="selectedMovement.typeMouvement === TypeMouvement.ENTREE"
+                  [class.text-danger]="selectedMovement.typeMouvement === TypeMouvement.SORTIE">
+              <span *ngIf="selectedMovement.typeMouvement === TypeMouvement.ENTREE">+</span>
+              <span *ngIf="selectedMovement.typeMouvement === TypeMouvement.SORTIE">-</span>
+              {{ formatNumber(selectedMovement.quantite) }}
+            </span>
+          </div>
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.prixUnitaire">
+            <strong>Prix unitaire :</strong>
+            <span class="ms-2">{{ formatCurrency(selectedMovement.prixUnitaire) }}</span>
+          </div>
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.valeurTotale">
+            <strong>Valeur totale :</strong>
+            <span class="ms-2 fw-bold">{{ formatCurrency(selectedMovement.valeurTotale) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Partenaires commerciaux -->
+    <div class="card mb-3" *ngIf="selectedMovement.fournisseurNom || selectedMovement.client">
+      <div class="card-header">
+        <h6 class="mb-0">Partenaires Commerciaux</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.fournisseurNom">
+            <strong>Fournisseur :</strong>
+            <span class="ms-2">{{ selectedMovement.fournisseurNom }}</span>
+          </div>
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.client">
+            <strong>Client :</strong>
+            <span class="ms-2">{{ selectedMovement.client }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Documents et références -->
+    <div class="card mb-3" *ngIf="selectedMovement.numeroBon || selectedMovement.numeroFacture">
+      <div class="card-header">
+        <h6 class="mb-0">Documents et Références</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.numeroBon">
+            <strong>Numéro de bon :</strong>
+            <span class="ms-2">{{ selectedMovement.numeroBon }}</span>
+          </div>
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.numeroFacture">
+            <strong>Numéro de facture :</strong>
+            <span class="ms-2">{{ selectedMovement.numeroFacture }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Impact sur le stock -->
+    <div class="card mb-3">
+      <div class="card-header">
+        <h6 class="mb-0">Impact sur le Stock</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-center">
+          <div class="text-center">
+            <small class="text-muted">Stock avant</small>
+            <div class="fw-bold">{{ formatNumber(selectedMovement.stockAvant) }}</div>
+          </div>
+          <i class="fas fa-arrow-right mx-4 text-primary"></i>
+          <div class="text-center">
+            <small class="text-muted">Stock après</small>
+            <div class="fw-bold">{{ formatNumber(selectedMovement.stockApres) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informations supplémentaires -->
+    <div class="card mb-3" *ngIf="selectedMovement.motif || selectedMovement.observations">
+      <div class="card-header">
+        <h6 class="mb-0">Informations Supplémentaires</h6>
+      </div>
+      <div class="card-body">
+        <div class="mb-2" *ngIf="selectedMovement.motif">
+          <strong>Motif :</strong>
+          <span class="ms-2">{{ selectedMovement.motif }}</span>
+        </div>
+        <div class="mb-2" *ngIf="selectedMovement.observations">
+          <strong>Observations :</strong>
+          <span class="ms-2">{{ selectedMovement.observations }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Traçabilité -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="mb-0">Traçabilité</h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.utilisateur">
+            <strong>Utilisateur :</strong>
+            <span class="ms-2">{{ selectedMovement.utilisateur }}</span>
+          </div>
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.dateCreation">
+            <strong>Date de création :</strong>
+            <span class="ms-2">{{ formatDateTime(selectedMovement.dateCreation) }}</span>
+          </div>
+          <div class="col-md-6 mb-2" *ngIf="selectedMovement.dateModification">
+            <strong>Dernière modification :</strong>
+            <span class="ms-2">{{ formatDateTime(selectedMovement.dateModification) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="movementDetailsModalRef?.hide()">Fermer</button>
+    <button type="button" class="btn btn-outline-primary"
+            (click)="getArticleMovementHistory(selectedMovement!.articleId)" *ngIf="selectedMovement">
+      <i class="fas fa-history me-1"></i>
+      Historique Article
+    </button>
+    <button type="button" class="btn btn-primary"
+            (click)="printMovementDetails(selectedMovement!)" *ngIf="selectedMovement">
+      <i class="fas fa-print me-1"></i>
+      Imprimer
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal pour les opérations en lot -->
+<ng-template #batchOperationModal>
+  <div class="modal-header">
+    <h5 class="modal-title">
+      <i class="fas fa-list me-2"></i>
+      Opérations en Lot
+    </h5>
+    <button type="button" class="btn-close" (click)="batchOperationModalRef?.hide()" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="batchForm" class="batch-form">
+      <!-- Type de mouvement pour le lot -->
+      <div class="mb-4">
+        <label class="form-label">Type de mouvement *</label>
+        <select class="form-select" formControlName="typeMouvement" required
+                [class.is-invalid]="batchForm.get('typeMouvement')?.invalid && batchForm.get('typeMouvement')?.touched">
+          <option value="">Sélectionnez un type</option>
+          <option value="ENTREE">Entrées de stock</option>
+          <option value="SORTIE">Sorties de stock</option>
+        </select>
+        <div class="invalid-feedback" *ngIf="batchForm.get('typeMouvement')?.hasError('required') && batchForm.get('typeMouvement')?.touched">
+          Le type de mouvement est requis
+        </div>
+      </div>
+
+      <!-- Tableau des mouvements -->
+      <div class="batch-movements">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6>Mouvements à traiter</h6>
+          <button type="button" class="btn btn-success" (click)="addBatchMovement()"
+                  [disabled]="!batchForm.get('typeMouvement')?.value">
+            <i class="fas fa-plus me-1"></i>
+            Ajouter un mouvement
+          </button>
+        </div>
+
+        <div formArrayName="movements" class="movements-list">
+          <div *ngFor="let movement of batchMovements.controls; let i = index"
+               [formGroupName]="i"
+               class="card mb-3">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Mouvement {{ i + 1 }}</h6>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeBatchMovement(i)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Article *</label>
+                  <select class="form-select" formControlName="articleId" required
+                          [class.is-invalid]="movement.get('articleId')?.invalid && movement.get('articleId')?.touched">
+                    <option value="">Sélectionnez un article</option>
+                    <option *ngFor="let article of articles; trackBy: trackByArticleId" [value]="article.id">
+                      {{ article.code }} - {{ article.nom || article.designation }}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="movement.get('articleId')?.hasError('required') && movement.get('articleId')?.touched">
+                    L'article est requis
+                  </div>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label">Quantité *</label>
+                  <input type="number" class="form-control" formControlName="quantite" required min="1"
+                         [class.is-invalid]="movement.get('quantite')?.invalid && movement.get('quantite')?.touched">
+                  <div class="invalid-feedback" *ngIf="movement.get('quantite')?.hasError('required') && movement.get('quantite')?.touched">
+                    La quantité est requise
+                  </div>
+                  <div class="invalid-feedback" *ngIf="movement.get('quantite')?.hasError('min') && movement.get('quantite')?.touched">
+                    La quantité doit être positive
+                  </div>
+                </div>
+
+                <div class="col-md-3" *ngIf="batchForm.get('typeMouvement')?.value === TypeMouvement.ENTREE">
+                  <label class="form-label">Prix unitaire *</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" formControlName="prixUnitaire" min="0" step="0.01" required
+                           [class.is-invalid]="movement.get('prixUnitaire')?.invalid && movement.get('prixUnitaire')?.touched">
+                    <span class="input-group-text">MAD</span>
+                  </div>
+                  <div class="invalid-feedback" *ngIf="movement.get('prixUnitaire')?.hasError('required') && movement.get('prixUnitaire')?.touched">
+                    Le prix unitaire est requis pour les entrées
+                  </div>
+                  <div class="invalid-feedback" *ngIf="movement.get('prixUnitaire')?.hasError('min') && movement.get('prixUnitaire')?.touched">
+                    Le prix unitaire doit être positif
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-4" *ngIf="batchForm.get('typeMouvement')?.value === TypeMouvement.ENTREE">
+                  <label class="form-label">Fournisseur</label>
+                  <select class="form-select" formControlName="fournisseurId">
+                    <option value="">Aucun</option>
+                    <option *ngFor="let fournisseur of fournisseurs; trackBy: trackByFournisseurId" [value]="fournisseur.id">
+                      {{ fournisseur.nom }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="col-md-4" *ngIf="batchForm.get('typeMouvement')?.value === TypeMouvement.SORTIE">
+                  <label class="form-label">Client</label>
+                  <input type="text" class="form-control" formControlName="client" placeholder="Nom du client">
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">N° Bon</label>
+                  <input type="text" class="form-control" formControlName="numeroBon" placeholder="Numéro de bon">
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label">Observations</label>
+                  <input type="text" class="form-control" formControlName="observations" placeholder="Observations">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="batch-empty text-center py-5" *ngIf="batchMovements.length === 0">
+          <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Aucun mouvement ajouté. Sélectionnez d'abord un type de mouvement, puis cliquez sur "Ajouter un mouvement" pour commencer.</p>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="batchOperationModalRef?.hide()">Annuler</button>
+    <button type="button" class="btn btn-outline-warning" (click)="clearBatchMovements()"
+            [disabled]="batchMovements.length === 0">
+      <i class="fas fa-eraser me-1"></i>
+      Vider la liste
+    </button>
+    <button type="button" class="btn btn-primary"
+            (click)="processBatchOperation()"
+            [disabled]="batchForm.invalid || batchMovements.length === 0 || loading">
+      <span class="spinner-border spinner-border-sm me-2" *ngIf="loading"></span>
+      <span *ngIf="!loading">
+        <i class="fas fa-check me-1"></i>
+        Traiter {{ batchMovements.length }} mouvement(s)
+      </span>
+      <span *ngIf="loading">Traitement en cours...</span>
+    </button>
+  </div>
+</ng-template>
+
+<!-- Container pour les toasts (notifications) -->
+<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- Alert de confirmation pour les suppressions -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="confirmDeleteModalLabel">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Confirmation de suppression
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Êtes-vous sûr de vouloir annuler ce mouvement de stock ?</p>
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-circle me-2"></i>
+          Cette action est irréversible et affectera les calculs de stock.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger">
+          <i class="fas fa-trash me-1"></i>
+          Confirmer la suppression
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay global -->
+<div class="global-loading-overlay position-fixed w-100 h-100 d-flex justify-content-center align-items-center"
+     *ngIf="loading" style="top: 0; left: 0; z-index: 9998; background: rgba(255,255,255,0.8); backdrop-filter: blur(2px);">
+  <div class="text-center">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="text-muted">Chargement des données...</p>
+  </div>
+</div>

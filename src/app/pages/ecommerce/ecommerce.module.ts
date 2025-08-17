@@ -18,11 +18,7 @@ import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
 
 // Swiper Slider
 import { SlickCarouselModule } from 'ngx-slick-carousel';
-// component
-
-import { CartComponent } from './cart/cart.component';
 import { FournisseursComponent } from './customers/fournisseurs.component';
-import { OrdersComponent } from './orders/orders.component';
 // dropzone
 import { DropzoneModule } from 'ngx-dropzone-wrapper';
 import { DROPZONE_CONFIG } from 'ngx-dropzone-wrapper';
@@ -30,6 +26,8 @@ import { DropzoneConfigInterface } from 'ngx-dropzone-wrapper';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { CustomerOrdersComponent } from './customer-orders/customer-orders.component';
 import { ArticlesComponent } from './products/articles.component';
+import { StockInventoryComponent } from './stock-inventory/stock-inventory.component';
+import { StockMovementsComponent } from './orders/stock-movements.component';
 
 const DEFAULT_DROPZONE_CONFIG: DropzoneConfigInterface = {
   // Change this to your upload POST address:
@@ -40,7 +38,7 @@ const DEFAULT_DROPZONE_CONFIG: DropzoneConfigInterface = {
 
 @NgModule({
   // tslint:disable-next-line: max-line-length
-  declarations: [ArticlesComponent, CartComponent, FournisseursComponent, OrdersComponent,CustomerOrdersComponent],
+  declarations: [ArticlesComponent, StockInventoryComponent,StockMovementsComponent, FournisseursComponent ,CustomerOrdersComponent],
   imports: [
     CommonModule,
     EcommerceRoutingModule,

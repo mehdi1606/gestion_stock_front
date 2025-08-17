@@ -10,39 +10,34 @@ export const MENU: MenuItem[] = [
         id: 2,
         label: 'MENUITEMS.DASHBOARDS.TEXT',
         icon: 'bx-home-circle',
-         link: '/dashboard',
-
+        link: '/dashboard',
     },
-
-
-          {
-              id: 14,
-
-              label: 'Produit',
-              link: '/ecommerce/products',
-              icon: 'bx bx-box', // Updated icon for "Produit"
-              parentId: 13
-          },
-
-          {
-            id: 16,
-            label: 'Orders',
-            link: '/ecommerce/orders',
-            icon: 'bx bx-receipt', // Receipt icon for Orders
-            parentId: 13
-        },
-        {
-            id: 17,
-            label: 'Clients',
-            link: '/ecommerce/customers',
-            icon: 'bx bx-user', // User icon for Clients
-            parentId: 13
-        }
-
-
-
-
-
-
-   ];
-
+    {
+        id: 14,
+        label: 'Inventory',
+        link: '/Inventory',
+        icon: 'bx bx-package', // Inventory icon
+        parentId: 13
+    },
+    {
+        id: 16,
+        label: 'Fournisseurs',
+        link: '/fournisseurs',
+        icon: 'bx bx-buildings', // Suppliers/Buildings icon
+        parentId: 13
+    },
+    {
+        id: 17,
+        label: 'Stock',
+        link: '/Stock',
+        icon: 'bx bx-archive', // Archive/Stock icon
+        parentId: 13
+    },
+    {
+        id: 18,
+        label: 'Articles',
+        link: '/articles',
+        icon: 'bx bx-list-ul', // List icon for Articles
+        parentId: 13
+    }
+];

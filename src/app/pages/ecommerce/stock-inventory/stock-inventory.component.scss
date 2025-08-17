@@ -1,0 +1,2036 @@
+// ===============================
+// VARIABLES PROFESSIONNELLES
+// ===============================
+
+// Palette classique business
+$primary: #2563eb;           // Bleu professionnel
+$secondary: #64748b;         // Gris neutrel
+$success: #059669;           // Vert sobre
+$warning: #d97706;           // Orange professionnel
+$danger: #dc2626;            // Rouge classique
+$info: #0284c7;              // Bleu info
+$light: #f8fafc;             // Gris très clair
+$dark: #1e293b;              // Gris foncé
+
+// Couleurs neutres professionnelles
+$white: #ffffff;
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
+
+// Espacement classique
+$spacing-xs: 0.25rem;  // 4px
+$spacing-sm: 0.5rem;   // 8px
+$spacing-md: 1rem;     // 16px
+$spacing-lg: 1.5rem;   // 24px
+$spacing-xl: 2rem;     // 32px
+$spacing-2xl: 3rem;    // 48px
+
+// Ombres subtiles
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+// Border radius discret
+$radius-sm: 0.25rem;
+$radius-md: 0.375rem;
+$radius-lg: 0.5rem;
+
+// Transitions douces
+$transition: 0.15s ease-in-out;
+
+// Breakpoints
+$mobile: 768px;
+$tablet: 1024px;
+$desktop: 1200px;
+
+// ===============================
+// MIXINS UTILITAIRES
+// ===============================
+
+@mixin card-style {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+  transition: box-shadow $transition;
+
+  &:hover {
+    box-shadow: $shadow-md;
+}
+
+// ===============================
+// ANIMATIONS
+// ===============================
+
+// Animation de fadeIn pour les cartes
+@keyframes statsCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modern-stats-item {
+  animation: statsCardFadeIn 0.6s ease forwards;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+  &:nth-child(6) { animation-delay: 0.6s; }
+}
+
+// Animation simple et professionnelle
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+// Animation spinning pour le bouton refresh
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// ===============================
+// ÉTATS HOVER DISCRETS
+// ===============================
+
+.table tbody tr:hover {
+  background-color: rgba($primary, 0.02);
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.form-check-input:checked {
+  background-color: $primary;
+  border-color: $primary;
+}
+
+// ===============================
+// UTILITIES CLASSIQUES
+// ===============================
+
+.text-muted {
+  color: $gray-500 !important;
+}
+
+.fw-medium {
+  font-weight: 500 !important;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+
+.border-start {
+  border-left: 1px solid $gray-200 !important;
+}
+
+.bg-light {
+  background-color: $gray-50 !important;
+}
+
+// ===============================
+// AMÉLIORATIONS SPÉCIFIQUES
+// ===============================
+
+// Styles pour les stats cards avec soft background
+.stats-card {
+  &.bg-primary-soft {
+    background-color: rgba($primary, 0.05);
+    border-left: 4px solid $primary;
+  }
+
+  &.bg-success-soft {
+    background-color: rgba($success, 0.05);
+    border-left: 4px solid $success;
+  }
+
+  &.bg-danger-soft {
+    background-color: rgba($danger, 0.05);
+    border-left: 4px solid $danger;
+  }
+
+  &.bg-warning-soft {
+    background-color: rgba($warning, 0.05);
+    border-left: 4px solid $warning;
+  }
+
+  &.bg-info-soft {
+    background-color: rgba($info, 0.05);
+    border-left: 4px solid $info;
+  }
+
+  &.bg-secondary-soft {
+    background-color: rgba($secondary, 0.05);
+    border-left: 4px solid $secondary;
+  }
+}
+
+// Avatar avec couleurs subtiles
+.avatar-sm {
+  .avatar-title {
+    &.bg-primary {
+      background-color: $primary;
+      color: $white;
+    }
+
+    &.bg-success {
+      background-color: $success;
+      color: $white;
+    }
+
+    &.bg-danger {
+      background-color: $danger;
+      color: $white;
+    }
+
+    &.bg-warning {
+      background-color: $warning;
+      color: $white;
+    }
+
+    &.bg-info {
+      background-color: $info;
+      color: $white;
+    }
+
+    &.bg-secondary {
+      background-color: $secondary;
+      color: $white;
+    }
+  }
+}
+
+// ===============================
+// COMPATIBILITÉ BOOTSTRAP
+// ===============================
+
+// Classes Bootstrap manquantes
+.flex-shrink-0 {
+  flex-shrink: 0 !important;
+}
+
+.flex-grow-1 {
+  flex: 1 1 auto !important;
+}
+
+.ms-1 {
+  margin-left: 0.25rem !important;
+}
+
+.ms-2 {
+  margin-left: $spacing-sm !important;
+}
+
+.ms-3 {
+  margin-left: $spacing-lg !important;
+}
+
+.me-1 {
+  margin-right: 0.25rem !important;
+}
+
+.me-2 {
+  margin-right: $spacing-sm !important;
+}
+
+.me-3 {
+  margin-right: $spacing-lg !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mb-1 {
+  margin-bottom: 0.25rem !important;
+}
+
+.mb-2 {
+  margin-bottom: $spacing-sm !important;
+}
+
+.mb-3 {
+  margin-bottom: $spacing-lg !important;
+}
+
+.mb-4 {
+  margin-bottom: $spacing-xl !important;
+}
+
+.mt-2 {
+  margin-top: $spacing-sm !important;
+}
+
+.mt-3 {
+  margin-top: $spacing-lg !important;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.p-3 {
+  padding: $spacing-lg !important;
+}
+
+.px-3 {
+  padding-left: $spacing-lg !important;
+  padding-right: $spacing-lg !important;
+}
+
+.py-5 {
+  padding-top: $spacing-2xl !important;
+  padding-bottom: $spacing-2xl !important;
+}
+
+.font-size-11 {
+  font-size: 0.6875rem !important;
+}
+
+.font-size-12 {
+  font-size: 0.75rem !important;
+}
+
+.font-size-13 {
+  font-size: 0.8125rem !important;
+}
+
+.font-size-16 {
+  font-size: 1rem !important;
+}
+
+.font-size-18 {
+  font-size: 1.125rem !important;
+}
+
+.font-size-20 {
+  font-size: 1.25rem !important;
+}
+
+.rounded-circle {
+  border-radius: 50% !important;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+// Classes pour les couleurs de texte
+.text-primary {
+  color: $primary !important;
+}
+
+.text-success {
+  color: $success !important;
+}
+
+.text-danger {
+  color: $danger !important;
+}
+
+.text-warning {
+  color: $warning !important;
+}
+
+.text-info {
+  color: $info !important;
+}
+
+.text-secondary {
+  color: $secondary !important;
+}
+
+.text-dark {
+  color: $dark !important;
+}
+
+// Classes pour les backgrounds
+.bg-primary {
+  background-color: $primary !important;
+}
+
+.bg-success {
+  background-color: $success !important;
+}
+
+.bg-danger {
+  background-color: $danger !important;
+}
+
+.bg-warning {
+  background-color: $warning !important;
+}
+
+.bg-info {
+  background-color: $info !important;
+}
+
+.bg-secondary {
+  background-color: $secondary !important;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+// ===============================
+// DROPDOWN STYLES
+// ===============================
+
+.dropdown-menu {
+  background-color: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  padding: $spacing-sm;
+
+  .dropdown-item {
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    color: $gray-700;
+    text-decoration: none;
+    transition: all $transition;
+
+    &:hover {
+      background-color: $gray-50;
+      color: $gray-900;
+    }
+
+    i {
+      color: $gray-500;
+    }
+  }
+}
+
+// ===============================
+// FORM CONTROLS
+// ===============================
+
+.form-check {
+  .form-check-input {
+    border: 2px solid $gray-300;
+    border-radius: $radius-sm;
+
+    &:checked {
+      background-color: $primary;
+      border-color: $primary;
+    }
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 0.25rem rgba($primary, 0.25);
+    }
+  }
+}
+
+.form-control {
+  border: 1px solid $gray-300;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 0.25rem rgba($primary, 0.25);
+  }
+}
+
+// ===============================
+// FINITIONS ET OPTIMISATIONS
+// ===============================
+
+// Focus professionnel
+button:focus,
+.btn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid rgba($primary, 0.25);
+  outline-offset: 2px;
+}
+
+// Scrollbar personnalisée
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $gray-100;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: 4px;
+
+  &:hover {
+    background: $gray-400;
+  }
+}
+
+// Selection text
+::selection {
+  background-color: rgba($primary, 0.2);
+  color: $gray-900;
+}
+
+// Print styles
+@media print {
+  .btn-group,
+  .search-box,
+  .pagination,
+  .dropdown {
+    display: none !important;
+  }
+
+  .stats-modern-container,
+  .card {
+    box-shadow: none !important;
+    border: 1px solid $gray-300 !important;
+    break-inside: avoid;
+  }
+
+  .page-title-box {
+    border-bottom: 2px solid $gray-900 !important;
+  }
+
+  body {
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
+
+// Dark mode support (optionnel)
+@media (prefers-color-scheme: dark) {
+  .stock-inventory-container {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .stats-modern-container,
+  .card {
+    background-color: #2a2a2a;
+    border-color: #404040;
+  }
+
+  .table {
+    color: #ffffff;
+
+    thead th {
+      background-color: #333333;
+      color: #ffffff;
+      border-color: #404040;
+    }
+
+    tbody {
+      tr {
+        border-color: #404040;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+
+      td {
+        border-color: #404040;
+      }
+    }
+  }
+
+  .btn {
+    border-color: #404040;
+  }
+
+  .form-control,
+  .form-select {
+    background-color: #2a2a2a;
+    border-color: #404040;
+    color: #ffffff;
+
+    &:focus {
+      background-color: #2a2a2a;
+      border-color: $primary;
+    }
+  }
+}
+
+// Reduced motion pour accessibility
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .pulse-animation .stats-card-wrapper {
+    animation: none !important;
+  }
+}
+}
+
+@mixin button-style($color) {
+  background-color: $color;
+  border: 1px solid $color;
+  color: white;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all $transition;
+
+  &:hover {
+    background-color: darken($color, 8%);
+    border-color: darken($color, 8%);
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($color, 0.25);
+  }
+}
+
+@mixin status-indicator($color) {
+  border-left: 4px solid $color;
+  background-color: rgba($color, 0.02);
+}
+
+// ===============================
+// LAYOUT PRINCIPAL
+// ===============================
+
+.stock-inventory-container {
+  background-color: $gray-50;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: $gray-900;
+  line-height: 1.5;
+}
+
+// ===============================
+// HEADER PROFESSIONNEL
+// ===============================
+
+.page-title-box {
+  @include card-style;
+  background: $white;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+  border-bottom: 3px solid $primary;
+
+  h4 {
+    color: $gray-900;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+
+    i {
+      color: $primary;
+      margin-right: $spacing-md;
+      font-size: 1.75rem;
+    }
+  }
+
+  .page-title-right {
+    small {
+      color: $gray-500;
+      font-size: 0.875rem;
+
+      i {
+        color: $gray-400;
+        margin-right: $spacing-xs;
+      }
+    }
+  }
+
+  .btn-group {
+    .btn {
+      border-radius: $radius-md;
+      margin-left: $spacing-sm;
+      font-weight: 500;
+
+      &.btn-outline-primary {
+        @include button-style(transparent);
+        color: $primary;
+        border-color: $primary;
+
+        &:hover {
+          @include button-style($primary);
+        }
+      }
+
+      &.btn-outline-secondary {
+        @include button-style(transparent);
+        color: $gray-600;
+        border-color: $gray-300;
+
+        &:hover {
+          @include button-style($gray-600);
+        }
+      }
+
+      &.btn-primary {
+        @include button-style($primary);
+      }
+    }
+  }
+}
+
+// ===============================
+// STATISTIQUES MODERNES
+// ===============================
+
+.stats-modern-container {
+  background: $white;
+  border-radius: 16px;
+  padding: $spacing-lg;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  border: 1px solid $gray-100;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $primary, $success, $info);
+  }
+}
+
+// Header de la section
+.stats-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid $gray-100;
+
+  .stats-header-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, $primary, darken($primary, 20%));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: $spacing-md;
+    box-shadow: 0 4px 16px rgba($primary, 0.25);
+
+    i {
+      font-size: 1.25rem;
+      color: $white;
+    }
+  }
+
+  .stats-header-content {
+    .stats-title {
+      color: $gray-900;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.125rem;
+      line-height: 1.2;
+    }
+
+    .stats-subtitle {
+      color: $gray-500;
+      font-size: 0.75rem;
+      margin: 0;
+      line-height: 1.3;
+    }
+  }
+}
+
+// Grille moderne des statistiques
+.modern-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: $spacing-lg;
+}
+
+// Cartes de statistiques modernes
+.modern-stats-item {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &.clickable {
+    cursor: pointer;
+  }
+
+  .stats-card-wrapper {
+    background: $white;
+    border-radius: 20px;
+    padding: $spacing-xl;
+    height: 100%;
+    border: 1px solid $gray-100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  }
+
+  &:hover .stats-card-wrapper {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &.clickable:hover .stats-card-wrapper {
+    transform: translateY(-12px) scale(1.02);
+  }
+}
+
+// Couleurs spécifiques par type
+.modern-stats-item {
+  &.total-articles .stats-card-wrapper::before {
+    background: linear-gradient(90deg, $primary, darken($primary, 20%));
+  }
+
+  &.total-value .stats-card-wrapper::before {
+    background: linear-gradient(90deg, $success, darken($success, 20%));
+  }
+
+  &.critical-stocks .stats-card-wrapper::before {
+    background: linear-gradient(90deg, $danger, darken($danger, 20%));
+  }
+
+  &.low-stocks .stats-card-wrapper::before {
+    background: linear-gradient(90deg, $warning, darken($warning, 20%));
+  }
+
+  &.empty-stocks .stats-card-wrapper::before {
+    background: linear-gradient(90deg, $secondary, darken($secondary, 20%));
+  }
+
+  &.normal-stocks .stats-card-wrapper::before {
+    background: linear-gradient(90deg, $info, darken($info, 20%));
+  }
+}
+
+// Icônes avec gradients
+.stats-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $spacing-lg;
+
+  .stats-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+    font-size: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(45deg);
+      transition: transform 0.6s ease;
+    }
+
+    &:hover::before {
+      transform: rotate(45deg) translate(50%, 50%);
+    }
+
+    // Gradients pour chaque type
+    &.bg-primary-gradient {
+      background: linear-gradient(135deg, $primary, darken($primary, 15%));
+    }
+
+    &.bg-success-gradient {
+      background: linear-gradient(135deg, $success, darken($success, 15%));
+    }
+
+    &.bg-danger-gradient {
+      background: linear-gradient(135deg, $danger, darken($danger, 15%));
+    }
+
+    &.bg-warning-gradient {
+      background: linear-gradient(135deg, $warning, darken($warning, 15%));
+    }
+
+    &.bg-secondary-gradient {
+      background: linear-gradient(135deg, $secondary, darken($secondary, 15%));
+    }
+
+    &.bg-info-gradient {
+      background: linear-gradient(135deg, $info, darken($info, 15%));
+    }
+  }
+}
+
+// Contenu des cartes
+.stats-content-wrapper {
+  text-align: center;
+
+  .stats-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+
+    .stats-label {
+      color: $gray-700;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stats-badge {
+      background: $gray-100;
+      color: $gray-600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+
+      &.urgent {
+        background: rgba($danger, 0.1);
+        color: $danger;
+      }
+
+      &.warning {
+        background: rgba($warning, 0.1);
+        color: $warning;
+      }
+
+      &.success {
+        background: rgba($success, 0.1);
+        color: $success;
+      }
+    }
+  }
+
+  .stats-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: $gray-900;
+    margin-bottom: $spacing-sm;
+    line-height: 1;
+  }
+
+  .stats-trend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+
+    i {
+      margin-right: 0.5rem;
+      padding: 0.25rem;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    &.trend-positive {
+      color: $success;
+
+      i {
+        background: rgba($success, 0.1);
+      }
+    }
+
+    &.trend-negative {
+      color: $danger;
+
+      i {
+        background: rgba($danger, 0.1);
+      }
+    }
+
+    &.trend-neutral {
+      color: $gray-600;
+
+      i {
+        background: rgba($gray-600, 0.1);
+      }
+    }
+  }
+}
+
+// Animation pulsée pour les stocks critiques
+.pulse-animation .stats-card-wrapper {
+  animation: criticalPulse 2s infinite;
+}
+
+@keyframes criticalPulse {
+  0% {
+    box-shadow: 0 4px 20px rgba($danger, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba($danger, 0.6);
+  }
+  100% {
+    box-shadow: 0 4px 20px rgba($danger, 0.3);
+  }
+}
+
+// ===============================
+// ANCIENNES STATISTIQUES (pour compatibilité)
+// ===============================
+
+// Header de la section statistiques
+.card-header {
+  background-color: $white !important;
+  border-bottom: 1px solid $gray-200;
+  padding: $spacing-lg;
+
+  h6 {
+    color: $gray-800;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  i {
+    font-size: 1.1rem;
+  }
+}
+
+// Items de statistiques simplifiés
+.stats-item {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  background: $white;
+  border: 1px solid $gray-100;
+  border-radius: $radius-lg;
+  transition: all $transition;
+  height: 100%;
+
+  &:hover {
+    border-color: $gray-200;
+    box-shadow: $shadow-sm;
+  }
+
+  &.stats-clickable {
+    cursor: pointer;
+
+    &:hover {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.stats-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+
+  i {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  // Couleurs subtiles
+  &.bg-primary-subtle {
+    background-color: rgba($primary, 0.1);
+  }
+
+  &.bg-success-subtle {
+    background-color: rgba($success, 0.1);
+  }
+
+  &.bg-danger-subtle {
+    background-color: rgba($danger, 0.1);
+  }
+
+  &.bg-warning-subtle {
+    background-color: rgba($warning, 0.1);
+  }
+
+  &.bg-secondary-subtle {
+    background-color: rgba($secondary, 0.1);
+  }
+
+  &.bg-info-subtle {
+    background-color: rgba($info, 0.1);
+  }
+}
+
+.stats-content {
+  flex: 1;
+
+  .stats-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+    color: $gray-900;
+  }
+
+  .stats-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $gray-600;
+    margin: 0;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+}
+
+// ===============================
+// BARRE D'OUTILS
+// ===============================
+
+.card {
+  @include card-style;
+}
+
+.search-box {
+  position: relative;
+
+  .search-input {
+    width: 100%;
+    padding: $spacing-md $spacing-md $spacing-md 2.75rem;
+    border: 1px solid $gray-300;
+    border-radius: $radius-md;
+    font-size: 0.875rem;
+    transition: border-color $transition, box-shadow $transition;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+
+    &::placeholder {
+      color: $gray-400;
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    left: $spacing-md;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $gray-400;
+    font-size: 1rem;
+  }
+}
+
+// Boutons filtres
+.btn {
+  font-weight: 500;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  transition: all $transition;
+  text-decoration: none;
+
+  &.btn-sm {
+    padding: 0.375rem $spacing-md;
+    font-size: 0.875rem;
+  }
+
+  // Styles spécifiques
+  &.btn-danger, &.btn-outline-danger {
+    &.btn-danger {
+      @include button-style($danger);
+    }
+    &.btn-outline-danger {
+      color: $danger;
+      border-color: $danger;
+      background: transparent;
+      &:hover { @include button-style($danger); }
+    }
+  }
+
+  &.btn-warning, &.btn-outline-warning {
+    &.btn-warning {
+      @include button-style($warning);
+    }
+    &.btn-outline-warning {
+      color: $warning;
+      border-color: $warning;
+      background: transparent;
+      &:hover { @include button-style($warning); }
+    }
+  }
+
+  &.btn-secondary, &.btn-outline-secondary {
+    &.btn-secondary {
+      @include button-style($secondary);
+    }
+    &.btn-outline-secondary {
+      color: $secondary;
+      border-color: $gray-300;
+      background: transparent;
+      &:hover { @include button-style($secondary); }
+    }
+  }
+
+  &.btn-primary, &.btn-outline-primary {
+    &.btn-primary {
+      @include button-style($primary);
+    }
+    &.btn-outline-primary {
+      color: $primary;
+      border-color: $primary;
+      background: transparent;
+      &:hover { @include button-style($primary); }
+    }
+  }
+}
+
+// Groupes de boutons radio
+.btn-group .btn-check:checked + .btn {
+  @include button-style($primary);
+}
+
+// Select professionnel
+.form-select {
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $gray-300;
+  border-radius: $radius-md;
+  font-size: 0.875rem;
+  transition: border-color $transition;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+}
+
+// ===============================
+// TABLEAU PROFESSIONNEL
+// ===============================
+
+.table-responsive {
+  border-radius: $radius-lg;
+  overflow: hidden;
+  @include card-style;
+}
+
+.table {
+  margin: 0;
+  font-size: 0.875rem;
+
+  thead {
+    background-color: $gray-50;
+
+    th {
+      border-bottom: 2px solid $gray-200;
+      padding: $spacing-md $spacing-lg;
+      font-weight: 600;
+      color: $gray-700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+
+      &.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background-color $transition;
+
+        &:hover {
+          background-color: $gray-100;
+        }
+
+        .bx {
+          margin-left: $spacing-xs;
+          opacity: 0.6;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color $transition;
+
+      &:hover {
+        background-color: $gray-50;
+      }
+
+      &.table-active {
+        background-color: rgba($primary, 0.05);
+        @include status-indicator($primary);
+      }
+
+      &.status-critical {
+        @include status-indicator($danger);
+      }
+
+      &.status-low {
+        @include status-indicator($warning);
+      }
+
+      &.status-excessive {
+        @include status-indicator($info);
+      }
+    }
+
+    td {
+      padding: $spacing-md $spacing-lg;
+      border-bottom: 1px solid $gray-100;
+      vertical-align: middle;
+    }
+  }
+}
+
+// Indicateurs de statut
+.status-indicator .badge {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge {
+  &.badge-danger { background-color: $danger; }
+  &.badge-warning { background-color: $warning; }
+  &.badge-success { background-color: $success; }
+  &.badge-info { background-color: $info; }
+  &.badge-secondary { background-color: $secondary; }
+}
+
+// Informations dans les cellules
+.quantities-info, .value-info, .activity-info {
+  h6 {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: $spacing-xs;
+    color: $gray-900;
+  }
+
+  .d-flex {
+    gap: $spacing-md;
+    font-size: 0.75rem;
+
+    span {
+      &.text-warning { color: $warning; }
+      &.text-success { color: $success; }
+      &.text-danger { color: $danger; }
+    }
+  }
+}
+
+.font-family-code {
+  font-family: 'SF Mono', Consolas, monospace;
+  font-weight: 600;
+  color: $primary;
+  background: rgba($primary, 0.1);
+  padding: 0.125rem 0.25rem;
+  border-radius: $radius-sm;
+  font-size: 0.8rem;
+}
+
+// ===============================
+// CARTES DE STOCK
+// ===============================
+
+.stock-card {
+  @include card-style;
+  height: 100%;
+  transition: all $transition;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+
+  &.status-critical { @include status-indicator($danger); }
+  &.status-low { @include status-indicator($warning); }
+  &.status-excessive { @include status-indicator($info); }
+
+  .card-header {
+    background-color: $gray-50;
+    border-bottom: 1px solid $gray-200;
+    padding: $spacing-lg;
+
+    .avatar-title {
+      width: 3rem;
+      height: 3rem;
+      border-radius: $radius-lg;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: $gray-900;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-subtitle {
+      color: $gray-600;
+      font-size: 0.875rem;
+    }
+  }
+
+  .card-body {
+    padding: $spacing-lg;
+
+    h4 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: $gray-900;
+      margin-bottom: 0.5rem;
+    }
+
+    h5 {
+      font-weight: 600;
+      color: $success;
+    }
+
+    hr {
+      border: none;
+      height: 1px;
+      background-color: $gray-200;
+      margin: $spacing-lg 0;
+    }
+  }
+
+  .card-footer {
+    background-color: $white;
+    border-top: 1px solid $gray-200;
+    padding: $spacing-md $spacing-lg;
+
+    .btn {
+      font-size: 0.75rem;
+      padding: 0.375rem $spacing-sm;
+    }
+  }
+}
+
+// ===============================
+// GRILLE
+// ===============================
+
+.grid-item {
+  @include card-style;
+  min-height: 200px;
+  transition: all $transition;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &.status-critical { @include status-indicator($danger); }
+  &.status-low { @include status-indicator($warning); }
+  &.status-excessive { @include status-indicator($info); }
+
+  .card-body {
+    padding: $spacing-lg;
+    text-align: center;
+  }
+
+  .item-code {
+    @extend .font-family-code;
+    margin-bottom: $spacing-sm;
+  }
+
+  .item-name {
+    font-weight: 600;
+    color: $gray-900;
+    margin-bottom: $spacing-md;
+    font-size: 0.875rem;
+  }
+
+  .item-quantity h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $gray-900;
+  }
+
+  .item-value {
+    font-weight: 600;
+    color: $success;
+    font-size: 0.875rem;
+  }
+}
+
+// ===============================
+// PAGINATION
+// ===============================
+
+.pagination {
+  .page-item {
+    .page-link {
+      border: 1px solid $gray-300;
+      color: $gray-700;
+      padding: $spacing-sm $spacing-md;
+      margin: 0 2px;
+      border-radius: $radius-md;
+      font-weight: 500;
+      font-size: 0.875rem;
+      transition: all $transition;
+
+      &:hover {
+        background-color: $gray-50;
+        border-color: $gray-400;
+        text-decoration: none;
+      }
+    }
+
+    &.active .page-link {
+      background-color: $primary;
+      border-color: $primary;
+      color: white;
+    }
+
+    &.disabled .page-link {
+      color: $gray-400;
+      background-color: $white;
+      border-color: $gray-200;
+    }
+  }
+}
+
+.pagination-info {
+  color: $gray-600;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+// ===============================
+// ALERTES
+// ===============================
+
+.alert {
+  border: none;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+
+  &.alert-info {
+    background-color: rgba($info, 0.1);
+    color: $info;
+    border-left: 4px solid $info;
+
+    .btn {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// ===============================
+// ÉTATS ET CHARGEMENT
+// ===============================
+
+.spinner-border {
+  color: $primary;
+}
+
+.avatar-lg {
+  width: 4rem;
+  height: 4rem;
+
+  .avatar-title {
+    width: 100%;
+    height: 100%;
+    border-radius: $radius-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+
+    &.bg-danger-subtle {
+      background-color: rgba($danger, 0.1);
+      color: $danger;
+    }
+
+    &.bg-light {
+      background-color: $gray-100;
+      color: $gray-500;
+    }
+  }
+}
+
+// ===============================
+// RESPONSIVE PROFESSIONNEL
+// ===============================
+
+@media (max-width: $mobile) {
+  .stock-inventory-container {
+    font-size: 0.875rem;
+  }
+
+  .page-title-box {
+    padding: $spacing-lg;
+
+    h4 {
+      font-size: 1.25rem;
+    }
+
+    .btn-group {
+      flex-direction: column;
+      gap: $spacing-sm;
+      width: 100%;
+
+      .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
+  }
+
+  // Responsive pour les nouvelles statistiques
+  .stats-modern-container {
+    padding: $spacing-lg;
+  }
+
+  .stats-header {
+    flex-direction: column;
+    text-align: center;
+
+    .stats-header-icon {
+      margin-right: 0;
+      margin-bottom: $spacing-md;
+    }
+  }
+
+  .modern-stats-grid {
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+  }
+
+  .stats-content-wrapper .stats-number {
+    font-size: 2.5rem;
+  }
+
+  .stats-icon-wrapper .stats-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 1.5rem;
+  }
+
+  .stats-card {
+    margin-bottom: $spacing-md;
+
+    .d-flex {
+      flex-direction: column;
+      text-align: center;
+      gap: $spacing-sm;
+    }
+  }
+
+  .search-box {
+    margin-bottom: $spacing-md;
+  }
+
+  .d-flex.gap-2 {
+    flex-direction: column;
+    gap: $spacing-sm !important;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+
+    .btn {
+      margin: 1px 0;
+      border-radius: $radius-md !important;
+    }
+  }
+
+  .table-responsive {
+    font-size: 0.75rem;
+
+    .table th, .table td {
+      padding: $spacing-sm;
+    }
+  }
+
+  .stock-card, .grid-item {
+    margin-bottom: $spacing-md;
+  }
+
+  // Responsive pour tablettes
+  @media (max-width: $tablet) {
+    .page-title-box {
+      .btn-group {
+        .btn {
+          font-size: 0.875rem;
+        }
+      }
+    }
+
+    .modern-stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stats-content-wrapper .stats-number {
+      font-size: 2.25rem;
+    }
+  }
+}
+
+// ===============================
+// ANIMATIONS
+// ===============================
+
+// Animation de fadeIn pour les cartes
+@keyframes statsCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modern-stats-item {
+  animation: statsCardFadeIn 0.6s ease forwards;
+
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+  &:nth-child(5) { animation-delay: 0.5s; }
+  &:nth-child(6) { animation-delay: 0.6s; }
+}
+
+// Animation simple et professionnelle
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+// ===============================
+// ÉTATS HOVER DISCRETS
+// ===============================
+
+.table tbody tr:hover {
+  background-color: rgba($primary, 0.02);
+}
+
+.btn:hover {
+  text-decoration: none;
+}
+
+.form-check-input:checked {
+  background-color: $primary;
+  border-color: $primary;
+}
+
+// ===============================
+// UTILITIES CLASSIQUES
+// ===============================
+
+.text-muted {
+  color: $gray-500 !important;
+}
+
+.fw-medium {
+  font-weight: 500 !important;
+}
+
+.fw-semibold {
+  font-weight: 600 !important;
+}
+
+.border-start {
+  border-left: 1px solid $gray-200 !important;
+}
+
+.bg-light {
+  background-color: $gray-50 !important;
+}
+
+// ===============================
+// AMÉLIORATIONS SPÉCIFIQUES
+// ===============================
+
+// Animation spinning pour le bouton refresh
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Styles pour les stats cards avec soft background
+.stats-card {
+  &.bg-primary-soft {
+    background-color: rgba($primary, 0.05);
+    border-left: 4px solid $primary;
+  }
+
+  &.bg-success-soft {
+    background-color: rgba($success, 0.05);
+    border-left: 4px solid $success;
+  }
+
+  &.bg-danger-soft {
+    background-color: rgba($danger, 0.05);
+    border-left: 4px solid $danger;
+  }
+
+  &.bg-warning-soft {
+    background-color: rgba($warning, 0.05);
+    border-left: 4px solid $warning;
+  }
+
+  &.bg-info-soft {
+    background-color: rgba($info, 0.05);
+    border-left: 4px solid $info;
+  }
+
+  &.bg-secondary-soft {
+    background-color: rgba($secondary, 0.05);
+    border-left: 4px solid $secondary;
+  }
+}
+
+// Avatar avec couleurs subtiles
+.avatar-sm {
+  .avatar-title {
+    &.bg-primary {
+      background-color: $primary;
+      color: $white;
+    }
+
+    &.bg-success {
+      background-color: $success;
+      color: $white;
+    }
+
+    &.bg-danger {
+      background-color: $danger;
+      color: $white;
+    }
+
+    &.bg-warning {
+      background-color: $warning;
+      color: $white;
+    }
+
+    &.bg-info {
+      background-color: $info;
+      color: $white;
+    }
+
+    &.bg-secondary {
+      background-color: $secondary;
+      color: $white;
+    }
+  }
+}
+
+// ===============================
+// COMPATIBILITÉ BOOTSTRAP
+// ===============================
+
+// Classes Bootstrap manquantes
+.flex-shrink-0 {
+  flex-shrink: 0 !important;
+}
+
+.flex-grow-1 {
+  flex: 1 1 auto !important;
+}
+
+.ms-3 {
+  margin-left: $spacing-lg !important;
+}
+
+.me-2 {
+  margin-right: $spacing-sm !important;
+}
+
+.me-3 {
+  margin-right: $spacing-lg !important;
+}
+
+.mb-1 {
+  margin-bottom: 0.25rem !important;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.p-3 {
+  padding: $spacing-lg !important;
+}
+
+.font-size-16 {
+  font-size: 1rem !important;
+}
+
+.rounded-circle {
+  border-radius: 50% !important;
+}
+
+// Classes pour les couleurs de texte
+.text-primary {
+  color: $primary !important;
+}
+
+.text-success {
+  color: $success !important;
+}
+
+.text-danger {
+  color: $danger !important;
+}
+
+.text-warning {
+  color: $warning !important;
+}
+
+.text-info {
+  color: $info !important;
+}
+
+.text-secondary {
+  color: $secondary !important;
+}
+
+// ===============================
+// FINITIONS ET OPTIMISATIONS
+// ===============================
+
+// Suppression des animations fancy
+* {
+  animation-duration: 0.15s !important;
+  transition-duration: 0.15s !important;
+}
+
+// Focus professionnel
+button:focus,
+.btn:focus,
+input:focus,
+select:focus {
+  outline: 2px solid rgba($primary, 0.25);
+  outline-offset: 2px;
+}
+
+// Scrollbar personnalisée
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $gray-100;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $gray-300;
+  border-radius: 4px;
+
+  &:hover {
+    background: $gray-400;
+  }
+}
+
+// Print styles
+@media print {
+  .btn-group,
+  .search-box,
+  .pagination {
+    display: none !important;
+  }
+
+  .stats-modern-container,
+  .card {
+    box-shadow: none !important;
+    border: 1px solid $gray-300 !important;
+  }
+}
+
+// Dark mode support (optionnel)
+@media (prefers-color-scheme: dark) {
+  .stock-inventory-container {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  }
+
+  .stats-modern-container,
+  .card {
+    background-color: #2a2a2a;
+    border-color: #404040;
+  }
+}

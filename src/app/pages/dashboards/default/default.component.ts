@@ -8,547 +8,648 @@ import * as echarts from 'echarts';
   styleUrls: ['./default.component.scss']
 })
 export class DefaultComponent implements OnInit {
-  totalOrders = 0;
-  totalGlobalAmount = 0;
-  totalPaid = 0;
+  // Variables pour les statistiques principales
+  totalArticles = 0;
+  totalStockValue = 0;
+  stocksCritiques = 0;
+  stocksFaibles = 0;
+  stocksVides = 0;
+  stocksExcessifs = 0;
+  nombreFournisseurs = 0;
+  mouvementsAujourdhui = 0;
+
+  // Variables pour les données des graphiques
+  stockByCategory: any[] = [];
+  movementsTrend: any[] = [];
+  topConsumedArticles: any[] = [];
+  stockValueEvolution: any[] = [];
+  supplierPerformance: any[] = [];
+  generalStats: any = {};
+
+  private readonly BASE_URL = 'http://localhost:8090/api';
 
   constructor() {}
 
   ngOnInit() {
-    this.fetchData();
-    this.fetchTotalOrders();
-    this.fetchTotalGlobalAmount();
-    this.fetchTotalPaid();
-
+    this.initializeDashboard();
   }
 
-  async fetchData() {
+  async initializeDashboard() {
     try {
-      const allOrdersResponse = await axios.get('http://localhost:8044/api/orders');
-      const orders = allOrdersResponse.data;
+      // Charger toutes les données en parallèle pour de meilleures performances
+      await Promise.all([
+        this.fetchGeneralStatistics(),
+        this.fetchStockAlerts(),
+        this.fetchChartData(),
+        this.fetchSupplierCount(),
+        this.fetchTodayMovements()
+      ]);
 
-      this.calculateTotals(orders);
-      this.createCharts(orders);
-      this.createCategoryChart(orders); // Add this line to create the new category chart
-      this.createProductPopularityChart(orders); // Add this line
-      await this.fetchCustomerData();
+      // Créer tous les graphiques après le chargement des données
+      this.createAllCharts();
+
     } catch (error) {
-      console.error('Error fetching data', error);
+      console.error('Erreur lors de l\'initialisation du dashboard:', error);
     }
   }
 
+  // ===============================
+  // MÉTHODES DE RÉCUPÉRATION DES DONNÉES
+  // ===============================
 
-
-  private async fetchTotalOrders() {
+  private async fetchGeneralStatistics() {
     try {
-      const response = await axios.get('http://localhost:8044/api/orders/total-count');
-      this.totalOrders = response.data;
+      const response = await axios.get(`${this.BASE_URL}/dashboard/stats/general`);
+      if (response.data && response.data.success) {
+        this.generalStats = response.data.data;
+        this.totalArticles = this.generalStats.nombreTotalArticles || 0;
+        this.totalStockValue = this.generalStats.valeurTotaleStock || 0;
+      }
     } catch (error) {
-      console.error('Error fetching total orders', error);
+      console.error('Erreur lors de la récupération des statistiques générales:', error);
     }
   }
 
-  private async fetchTotalGlobalAmount() {
+  private async fetchStockAlerts() {
     try {
-      const response = await axios.get('http://localhost:8044/api/orders/total-global-amount');
-      this.totalGlobalAmount = response.data;
+      // Stocks critiques
+      const criticalResponse = await axios.get(`${this.BASE_URL}/stocks/alerts/critical`);
+      if (criticalResponse.data && criticalResponse.data.success) {
+        this.stocksCritiques = criticalResponse.data.data.length;
+      }
+
+      // Stocks faibles
+      const lowResponse = await axios.get(`${this.BASE_URL}/stocks/alerts/low`);
+      if (lowResponse.data && lowResponse.data.success) {
+        this.stocksFaibles = lowResponse.data.data.length;
+      }
+
+      // Stocks vides
+      const emptyResponse = await axios.get(`${this.BASE_URL}/stocks/alerts/empty`);
+      if (emptyResponse.data && emptyResponse.data.success) {
+        this.stocksVides = emptyResponse.data.data.length;
+      }
+
+      // Stocks excessifs
+      const excessiveResponse = await axios.get(`${this.BASE_URL}/stocks/alerts/excessive`);
+      if (excessiveResponse.data && excessiveResponse.data.success) {
+        this.stocksExcessifs = excessiveResponse.data.data.length;
+      }
     } catch (error) {
-      console.error('Error fetching total global amount', error);
+      console.error('Erreur lors de la récupération des alertes de stock:', error);
     }
   }
 
-  private async fetchTotalPaid() {
+  private async fetchChartData() {
     try {
-      const response = await axios.get('http://localhost:8044/api/orders/total-amount-paid');
-      this.totalPaid = response.data;
+      // Stock par catégorie
+      const categoryResponse = await axios.get(`${this.BASE_URL}/dashboard/charts/stock-by-category`);
+      if (categoryResponse.data && categoryResponse.data.success) {
+        this.stockByCategory = categoryResponse.data.data;
+      }
+
+      // Tendance des mouvements (7 jours)
+      const trendResponse = await axios.get(`${this.BASE_URL}/dashboard/charts/movements-trend?days=7`);
+      if (trendResponse.data && trendResponse.data.success) {
+        this.movementsTrend = trendResponse.data.data;
+      }
+
+      // Top articles consommés (30 jours)
+      const topArticlesResponse = await axios.get(`${this.BASE_URL}/dashboard/charts/top-consumed-articles?days=30&limit=10`);
+      if (topArticlesResponse.data && topArticlesResponse.data.success) {
+        this.topConsumedArticles = topArticlesResponse.data.data;
+      }
+
+      // Évolution de la valeur du stock (30 jours)
+      const stockEvolutionResponse = await axios.get(`${this.BASE_URL}/dashboard/charts/stock-value-evolution?days=30`);
+      if (stockEvolutionResponse.data && stockEvolutionResponse.data.success) {
+        this.stockValueEvolution = stockEvolutionResponse.data.data;
+      }
+
+      // Performance des fournisseurs
+      const supplierPerformanceResponse = await axios.get(`${this.BASE_URL}/dashboard/stats/supplier-performance?days=365&limit=10`);
+      if (supplierPerformanceResponse.data && supplierPerformanceResponse.data.success) {
+        this.supplierPerformance = supplierPerformanceResponse.data.data;
+      }
     } catch (error) {
-      console.error('Error fetching total paid amount', error);
+      console.error('Erreur lors de la récupération des données de graphiques:', error);
     }
   }
 
-  private async fetchCustomerData() {
+  private async fetchSupplierCount() {
     try {
-      const customerResponse = await axios.get('http://localhost:8044/api/customers/all');
-      const customers = customerResponse.data;
-      this.createCustomerChart(customers);
+      const response = await axios.get(`${this.BASE_URL}/fournisseurs/stats/count-by-status?actif=true`);
+      if (response.data && response.data.success) {
+        this.nombreFournisseurs = response.data.data;
+      }
     } catch (error) {
-      console.error('Error fetching customer data', error);
+      console.error('Erreur lors de la récupération du nombre de fournisseurs:', error);
     }
   }
 
-  private calculateTotals(orders: any[]) {
-    this.totalOrders = orders.length;
-    this.totalGlobalAmount = orders.reduce((acc, order) => acc + order.totalAmount, 0);
-    this.totalPaid = orders.reduce((acc, order) => acc + order.amountPaid, 0);
+  private async fetchTodayMovements() {
+    try {
+      const response = await axios.get(`${this.BASE_URL}/dashboard/stats/today-movements`);
+      if (response.data && response.data.success) {
+        this.mouvementsAujourdhui = response.data.data.totalMouvements || 0;
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des mouvements d\'aujourd\'hui:', error);
+    }
   }
 
-  private createCharts(orders: any[]) {
-    const paidOrders = orders.filter(order => order.invoiceStatus === 'Paid').length;
-    const unpaidOrders = orders.filter(order => order.invoiceStatus === 'Unpaid').length;
+  // ===============================
+  // MÉTHODES DE CRÉATION DES GRAPHIQUES
+  // ===============================
 
-    const totalAmount = orders.reduce((acc, order) => acc + order.totalAmount, 0);
-    const remainingAmount = totalAmount - this.totalPaid;
+  private createAllCharts() {
+    setTimeout(() => {
+      this.createStockByCategoryChart();
+      this.createMovementsTrendChart();
+      this.createTopConsumedArticlesChart();
+      this.createStockValueEvolutionChart();
+      this.createStockAlertsChart();
+      this.createSupplierPerformanceChart();
+    }, 100);
+  }
 
-    // Chart 1: Order Payment Status
-    const orderStatusChart = echarts.init(document.querySelector("#orderStatusChart"));
-    const orderStatusOptions = {
+  private createStockByCategoryChart() {
+    const chartContainer = document.querySelector("#stockByCategoryChart") as HTMLDivElement;
+    if (!chartContainer || !this.stockByCategory.length) return;
+
+    const chart = echarts.init(chartContainer);
+    const options = {
       title: {
-        text: 'Statut de Paiement des Commandes',
-        left: 'center'
-      },
-      tooltip: {
-        trigger: 'item'
-      },
-      legend: {
-        orient: 'horizontal',
-        bottom: '10%'
-      },
-      series: [
-        {
-          name: 'Commandes',
-          type: 'pie',
-          radius: ['35%', '55%'],
-          avoidLabelOverlap: false,
-          label: {
-            show: false,
-            position: 'center'
-          },
-          emphasis: {
-            label: {
-              show: true,
-              fontSize: '16',
-              fontWeight: 'bold'
-            }
-          },
-          labelLine: {
-            show: false
-          },
-          data: [
-            { value: paidOrders, name: 'Commandes Payées', itemStyle: { color: '#00c853' } },
-            { value: unpaidOrders, name: 'Commandes Non Payées', itemStyle: { color: '#ff1744' } }
-          ]
-        }
-      ]
-    };
-    orderStatusChart.setOption(orderStatusOptions);
-
-    // Chart 2: Total Amount vs. Remaining Amount
-    const amountBreakdownChart = echarts.init(document.querySelector("#amountBreakdownChart"));
-    const amountBreakdownOptions = {
-      title: {
-        text: 'Répartition des Montants',
-        left: 'center'
-      },
-      tooltip: {
-        trigger: 'item'
-      },
-      legend: {
-        orient: 'horizontal',
-        bottom: '10%'
-      },
-      series: [
-        {
-          name: 'Montant',
-          type: 'pie',
-          radius: ['35%', '55%'],
-          avoidLabelOverlap: false,
-          label: {
-            show: false,
-            position: 'center'
-          },
-          emphasis: {
-            label: {
-              show: true,
-              fontSize: '16',
-              fontWeight: 'bold'
-            }
-          },
-          labelLine: {
-            show: false
-          },
-          data: [
-            { value: this.totalPaid, name: 'Total Payé', itemStyle: { color: '#2196f3' } },
-            { value: remainingAmount, name: 'Montant Restant', itemStyle: { color: '#ffca28' } }
-          ]
-        }
-      ]
-    };
-    amountBreakdownChart.setOption(amountBreakdownOptions);
-  }
-
-  private createCustomerChart(customers: any[]) {
-    const customerNames = customers.map(customer => customer.name);
-    const paidAmounts = customers.map(customer => customer.orders.reduce((acc, order) => acc + order.amountPaid, 0));
-    const unpaidAmounts = customers.map(customer => customer.orders.reduce((acc, order) => acc + order.remainingAmount, 0));
-
-    const customerChart = echarts.init(document.querySelector("#monthlySalesChart"));
-    const customerChartOptions = {
-      title: {
-        text: 'Montant des Clients - Payé vs Non Payé',
+        text: 'Répartition du Stock par Catégorie',
         left: 'center',
         textStyle: {
           fontSize: 18,
-          fontWeight: 'bold',
-          color: '#333'
-        }
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      legend: {
-        data: ['Montant Payé', 'Montant Non Payé'],
-        bottom: '5%',
-        textStyle: {
-          fontSize: 14,
-          color: '#666'
-        }
-      },
-      grid: {
-        left: '4%',
-        right: '5%',
-        bottom: '15%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: customerNames,
-        axisLabel: {
-          interval: 0,
-          rotate: 30,
-          textStyle: {
-            fontSize: 12
-          }
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#888'
-          }
-        }
-      },
-      yAxis: {
-        type: 'value',
-        axisLine: {
-          lineStyle: {
-            color: '#888'
-          }
-        },
-        splitLine: {
-          lineStyle: {
-            type: 'dashed',
-            color: '#ccc'
-          }
-        }
-      },
-      series: [
-        {
-          name: 'Montant Payé',
-          type: 'bar',
-          barWidth: '10%',
-          stack: 'total',
-          data: paidAmounts,
-          itemStyle: {
-            color: '#00c853',
-            borderRadius: [5, 4, 0, 0]
-          }
-        },
-        {
-          name: 'Montant Non Payé',
-          type: 'bar',
-          barWidth: '10%',
-          stack: 'total',
-          data: unpaidAmounts,
-          itemStyle: {
-            color: '#ff1744',
-            borderRadius: [5, 4, 0, 0]
-          }
-        }
-      ]
-    };
-    customerChart.setOption(customerChartOptions);
-
-    // Now create the additional chart for categories
-    this.createCategoryChart(customers);
-  }
-  private createCategoryChart(orders: any[]) {
-    // Step 1: Initialize count totals for each category
-    const categoryCounts = {
-      Alimentaire: 0,
-      Cosmetique: 0,
-      Argan: 0
-    };
-
-    // Step 2: Iterate through orders to calculate counts for each category
-    orders.forEach(order => {
-      order.orderProducts.forEach(orderProduct => {
-        const category = orderProduct.product.category;
-        const productCount = orderProduct.quantity;
-
-        if (categoryCounts.hasOwnProperty(category)) {
-          categoryCounts[category] += productCount;
-        }
-      });
-    });
-
-    // Step 3: Prepare data for chart
-    const categories = Object.keys(categoryCounts);
-    const categoryValues = Object.values(categoryCounts);
-
-    // Step 4: Create the chart for categories
-    const categoryChart = echarts.init(document.querySelector("#categoryChart"));
-    const categoryChartOptions = {
-      title: {
-        text: 'Nombre de Produits Vendus par Catégorie',
-        left: 'center',
-        textStyle: {
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: '#333'
-        }
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      legend: {
-        data: ['Nombre de Produits'],
-        bottom: '5%',
-        textStyle: {
-          fontSize: 14,
-          color: '#666'
-        }
-      },
-      grid: {
-        left: '4%',
-        right: '5%',
-        bottom: '15%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: categories,
-        axisLabel: {
-          textStyle: {
-            fontSize: 14
-          }
-        },
-        axisLine: {
-          lineStyle: {
-            color: '#888'
-          }
-        }
-      },
-      yAxis: {
-        type: 'value',
-        axisLine: {
-          lineStyle: {
-            color: '#888'
-          }
-        },
-        splitLine: {
-          lineStyle: {
-            type: 'dashed',
-            color: '#ccc'
-          }
-        }
-      },
-      series: [
-        {
-          name: 'Nombre de Produits',
-          type: 'bar',
-          barWidth: '20%', // Keeping the bars thin for better readability
-          data: categoryValues,
-          itemStyle: {
-            color: '#42a5f5',
-            borderRadius: [10, 5, 0, 0] // Adds rounded corners for a modern look
-          }
-        }
-      ]
-    };
-    categoryChart.setOption(categoryChartOptions);
-  }
-
-
-  private createProductPopularityChart(orders: any[]) {
-    // Step 1: Process and aggregate product data
-    const productData = this.processProductData(orders);
-
-    // Step 2: Create and configure chart
-    const chartContainer = document.querySelector("#productPopularityChart") as HTMLDivElement;
-    if (!chartContainer) return;
-
-    const productPopularityChart = echarts.init(chartContainer);
-    const options = this.getChartOptions(productData);
-
-    // Step 3: Set chart options and handle responsiveness
-    productPopularityChart.setOption(options);
-    this.handleChartResponsiveness(productPopularityChart);
-  }
-
-  private processProductData(orders: any[]) {
-    // Aggregate product quantities
-    const productCounts = new Map<string, number>();
-
-    orders.forEach(order => {
-      order.orderProducts.forEach(orderProduct => {
-        const productName = orderProduct.product.nom;
-        const quantity = orderProduct.quantity;
-        productCounts.set(
-          productName,
-          (productCounts.get(productName) || 0) + quantity
-        );
-      });
-    });
-
-    // Convert to array, filter and sort
-    return Array.from(productCounts.entries())
-      .filter(([_, value]) => value > 0)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({
-        name,
-        value,
-        // Add label configuration based on value
-        label: {
-          show: true,
-          formatter: `${name}: ${value} unités`,
-          fontSize: value > (Math.max(...Array.from(productCounts.values())) / 2) ? 14 : 12
-        }
-      }));
-  }
-
-  private generateColorPalette(dataLength: number): string[] {
-    const palette = [];
-    const baseHue = 210; // Blue base
-    const saturationRange = [65, 75];
-    const lightnessRange = [45, 65];
-
-    for (let i = 0; i < dataLength; i++) {
-      const hue = (baseHue + (i * 360 / dataLength)) % 360;
-      const saturation = saturationRange[0] + (i * (saturationRange[1] - saturationRange[0]) / dataLength);
-      const lightness = lightnessRange[0] + (i * (lightnessRange[1] - lightnessRange[0]) / dataLength);
-      palette.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
-    }
-
-    return palette;
-  }
-
-  private getChartOptions(data: any[]): echarts.EChartsOption {
-    const isSmallScreen = window.innerWidth < 768;
-    const colors = this.generateColorPalette(data.length);
-
-    return {
-      title: {
-        text: '',
-        left: 'center',
-        top: '5%',
-        textStyle: {
-          fontSize: isSmallScreen ? 16 : 20,
           fontWeight: 'bold',
           color: '#333'
         }
       },
       tooltip: {
         trigger: 'item',
-        formatter: (params: any) => {
-          const value = params.value;
-          const percent = params.percent;
-          return `${params.name}<br/>Quantité: ${value} unités<br/>Pourcentage: ${percent}%`;
-        },
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderColor: '#ccc',
-        borderWidth: 1,
-        textStyle: {
-          color: '#333',
-          fontSize: isSmallScreen ? 12 : 14
-        }
+        formatter: '{a} <br/>{b} : {c} articles ({d}%)'
       },
       legend: {
-        type: 'scroll',
-        orient: 'vertical',
-        left: isSmallScreen ? '2%' : 'left',
-        top: 'middle',
-        itemWidth: 15,
-        itemHeight: 10,
-        pageButtonPosition: 'end',
-        pageButtonItemGap: 5,
-        pageButtonGap: 5,
+        orient: 'horizontal',
+        bottom: '5%',
         textStyle: {
-          fontSize: isSmallScreen ? 10 : 12,
+          fontSize: 12,
           color: '#666'
-        },
-        formatter: (name: string) => {
-          return name.length > 20 ? name.slice(0, 17) + '...' : name;
         }
       },
       series: [{
-        name: 'Produits Commandés',
+        name: 'Stock par Catégorie',
         type: 'pie',
-        radius: isSmallScreen ? ['35%', '65%'] : ['40%', '70%'],
-        center: isSmallScreen ? ['50%', '50%'] : ['60%', '50%'],
-        avoidLabelOverlap: true,
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 6,
           borderColor: '#fff',
           borderWidth: 2
         },
         label: {
-          show: !isSmallScreen,
-          position: 'outer',
-          formatter: '{b}: {c} unités',
-          fontSize: 12,
-          overflow: 'truncate',
-          width: 120
+          show: true,
+          formatter: '{b}: {c}'
         },
         emphasis: {
           label: {
             show: true,
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: 'bold'
-          },
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
           }
         },
-        labelLine: {
-          show: !isSmallScreen,
-          length: 15,
-          length2: 10,
-          smooth: true
-        },
-        data: data,
-        color: colors
+        data: this.stockByCategory.map(item => ({
+          value: item.value,
+          name: item.label,
+          itemStyle: { color: this.generateRandomColor() }
+        }))
       }]
     };
+
+    chart.setOption(options);
+    this.handleChartResponsiveness(chart);
+  }
+
+  private createMovementsTrendChart() {
+    const chartContainer = document.querySelector("#movementsTrendChart") as HTMLDivElement;
+    if (!chartContainer || !this.movementsTrend.length) return;
+
+    const chart = echarts.init(chartContainer);
+    const dates = this.movementsTrend.map(item => item.label);
+    const values = this.movementsTrend.map(item => item.value);
+
+    const options = {
+      title: {
+        text: 'Tendance des Mouvements (7 derniers jours)',
+        left: 'center',
+        textStyle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#333'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross'
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '10%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: dates,
+        axisLine: {
+          lineStyle: { color: '#888' }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: {
+          lineStyle: { color: '#888' }
+        },
+        splitLine: {
+          lineStyle: { type: 'dashed', color: '#ccc' }
+        }
+      },
+      series: [{
+        name: 'Mouvements',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 8,
+        data: values,
+        itemStyle: { color: '#44e0eb' },
+        lineStyle: { width: 3 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(68, 224, 235, 0.3)' },
+              { offset: 1, color: 'rgba(68, 224, 235, 0.05)' }
+            ]
+          }
+        }
+      }]
+    };
+
+    chart.setOption(options);
+    this.handleChartResponsiveness(chart);
+  }
+
+  private createTopConsumedArticlesChart() {
+    const chartContainer = document.querySelector("#topConsumedChart") as HTMLDivElement;
+    if (!chartContainer || !this.topConsumedArticles.length) return;
+
+    const chart = echarts.init(chartContainer);
+    const articleNames = this.topConsumedArticles.map(item => item.label);
+    const consumedQuantities = this.topConsumedArticles.map(item => item.value);
+
+    const options = {
+      title: {
+        text: 'Top 10 Articles les Plus Consommés (30 jours)',
+        left: 'center',
+        textStyle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#333'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: articleNames,
+        axisLabel: {
+          interval: 0,
+          rotate: 45,
+          textStyle: { fontSize: 12 }
+        },
+        axisLine: {
+          lineStyle: { color: '#888' }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: {
+          lineStyle: { color: '#888' }
+        },
+        splitLine: {
+          lineStyle: { type: 'dashed', color: '#ccc' }
+        }
+      },
+      series: [{
+        name: 'Quantité Consommée',
+        type: 'bar',
+        barWidth: '60%',
+        data: consumedQuantities,
+        itemStyle: {
+          color: '#F43F5E',
+          borderRadius: [5, 5, 0, 0]
+        }
+      }]
+    };
+
+    chart.setOption(options);
+    this.handleChartResponsiveness(chart);
+  }
+
+  private createStockValueEvolutionChart() {
+    const chartContainer = document.querySelector("#stockValueEvolutionChart") as HTMLDivElement;
+    if (!chartContainer || !this.stockValueEvolution.length) return;
+
+    const chart = echarts.init(chartContainer);
+    const dates = this.stockValueEvolution.map(item => item.label);
+    const values = this.stockValueEvolution.map(item => item.value);
+
+    const options = {
+      title: {
+        text: 'Évolution de la Valeur du Stock (30 jours)',
+        left: 'center',
+        textStyle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#333'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any) => {
+          const value = params[0].value;
+          return `${params[0].axisValue}<br/>Valeur: ${value.toLocaleString()} MAD`;
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '10%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: dates,
+        axisLine: {
+          lineStyle: { color: '#888' }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          formatter: '{value} MAD'
+        },
+        axisLine: {
+          lineStyle: { color: '#888' }
+        },
+        splitLine: {
+          lineStyle: { type: 'dashed', color: '#ccc' }
+        }
+      },
+      series: [{
+        name: 'Valeur du Stock',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        data: values,
+        itemStyle: { color: '#46e5e5' },
+        lineStyle: { width: 3 },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(70, 229, 229, 0.3)' },
+              { offset: 1, color: 'rgba(70, 229, 229, 0.05)' }
+            ]
+          }
+        }
+      }]
+    };
+
+    chart.setOption(options);
+    this.handleChartResponsiveness(chart);
+  }
+
+  private createStockAlertsChart() {
+    const chartContainer = document.querySelector("#stockAlertsChart") as HTMLDivElement;
+    if (!chartContainer) return;
+
+    const chart = echarts.init(chartContainer);
+    const alertData = [
+      { value: this.stocksCritiques, name: 'Stocks Critiques', itemStyle: { color: '#ff4757' } },
+      { value: this.stocksFaibles, name: 'Stocks Faibles', itemStyle: { color: '#ffa502' } },
+      { value: this.stocksVides, name: 'Stocks Vides', itemStyle: { color: '#ff6b6b' } },
+      { value: this.stocksExcessifs, name: 'Stocks Excessifs', itemStyle: { color: '#3742fa' } }
+    ];
+
+    const options = {
+      title: {
+        text: 'Alertes de Stock',
+        left: 'center',
+        textStyle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#333'
+        }
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b} : {c} articles ({d}%)'
+      },
+      legend: {
+        orient: 'horizontal',
+        bottom: '5%',
+        textStyle: {
+          fontSize: 12,
+          color: '#666'
+        }
+      },
+      series: [{
+        name: 'Alertes de Stock',
+        type: 'pie',
+        radius: ['30%', '60%'],
+        center: ['50%', '50%'],
+        data: alertData,
+        itemStyle: {
+          borderRadius: 6,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: true,
+          formatter: '{b}: {c}'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold'
+          }
+        }
+      }]
+    };
+
+    chart.setOption(options);
+    this.handleChartResponsiveness(chart);
+  }
+
+  private createSupplierPerformanceChart() {
+    const chartContainer = document.querySelector("#supplierPerformanceChart") as HTMLDivElement;
+    if (!chartContainer || !this.supplierPerformance.length) return;
+
+    const chart = echarts.init(chartContainer);
+
+    // Traitement des données fournisseurs
+    const suppliers = this.supplierPerformance.map((supplier: any) => supplier.nomFournisseur || supplier.nom || 'Fournisseur');
+    const performances = this.supplierPerformance.map((supplier: any) => supplier.performance || supplier.valeur || 0);
+
+    const options = {
+      title: {
+        text: 'Performance des Fournisseurs (Top 10)',
+        left: 'center',
+        textStyle: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          color: '#333'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: suppliers,
+        axisLabel: {
+          interval: 0,
+          rotate: 45,
+          textStyle: { fontSize: 12 }
+        },
+        axisLine: {
+          lineStyle: { color: '#888' }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: {
+          lineStyle: { color: '#888' }
+        },
+        splitLine: {
+          lineStyle: { type: 'dashed', color: '#ccc' }
+        }
+      },
+      series: [{
+        name: 'Performance',
+        type: 'bar',
+        barWidth: '60%',
+        data: performances,
+        itemStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#44e0eb' },
+              { offset: 1, color: '#46e5e5' }
+            ]
+          },
+          borderRadius: [5, 5, 0, 0]
+        }
+      }]
+    };
+
+    chart.setOption(options);
+    this.handleChartResponsiveness(chart);
+  }
+
+  // ===============================
+  // MÉTHODES UTILITAIRES
+  // ===============================
+
+  private generateRandomColor(): string {
+    const colors = [
+      '#44e0eb', '#F43F5E', '#46e5e5', '#737373',
+      '#ff4757', '#ffa502', '#3742fa', '#2ed573',
+      '#5352ed', '#ff3838', '#ff9ff3', '#54a0ff'
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
   }
 
   private handleChartResponsiveness(chart: echarts.ECharts) {
-    // Debounced resize handler
     let resizeTimeout: any;
     const handleResize = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
         chart.resize();
-        const options = this.getChartOptions(chart.getOption().series[0].data);
-        chart.setOption(options);
       }, 250);
     };
 
     window.addEventListener('resize', handleResize);
 
-    // Clean up
     const observer = new ResizeObserver(handleResize);
-    const container = document.querySelector("#productPopularityChart") as HTMLDivElement;
+    const container = chart.getDom();
     if (container) {
       observer.observe(container);
     }
   }
 
+  // ===============================
+  // MÉTHODES D'ACTUALISATION
+  // ===============================
 
+  async refreshDashboard() {
+    try {
+      console.log('Actualisation du dashboard en cours...');
+      await this.initializeDashboard();
+      console.log('Dashboard actualisé avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l\'actualisation du dashboard:', error);
+    }
+  }
 
+  // Getters pour les pourcentages et calculs
+  get criticalStockPercentage(): number {
+    return this.totalArticles > 0 ? (this.stocksCritiques / this.totalArticles) * 100 : 0;
+  }
+
+  get lowStockPercentage(): number {
+    return this.totalArticles > 0 ? (this.stocksFaibles / this.totalArticles) * 100 : 0;
+  }
+
+  get stockHealthScore(): string {
+    const totalProblems = this.stocksCritiques + this.stocksFaibles + this.stocksVides;
+    if (totalProblems === 0) return 'Excellent';
+    if (totalProblems < 10) return 'Bon';
+    if (totalProblems < 25) return 'Moyen';
+    return 'Critique';
+  }
+
+  get formattedStockValue(): string {
+    return this.totalStockValue.toLocaleString('fr-FR', {
+      style: 'currency',
+      currency: 'MAD',
+      minimumFractionDigits: 2
+    });
+  }
 }
