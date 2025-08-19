@@ -12,16 +12,12 @@ import { Observable } from 'rxjs';
 
 export enum TypeMouvement {
   ENTREE = 'ENTREE',
-  SORTIE = 'SORTIE',
-  TRANSFERT = 'TRANSFERT',
-  AJUSTEMENT = 'AJUSTEMENT',
-  INVENTAIRE = 'INVENTAIRE'
+  SORTIE = 'SORTIE'
 }
 
 export interface StockMovementDTO {
   id?: number;
   articleId: number;
-  articleCode?: string;
   articleNom?: string;
   articleDesignation?: string; // Added missing field
   typeMouvement: TypeMouvement;
@@ -384,9 +380,7 @@ export class StockMovementsComponent implements OnInit, OnDestroy {
     this.movementDetailsModalRef?.hide();
   }
 
-  // ===============================
-  // INITIALISATION - FIXED
-  // ===============================
+
 
   private initializeForms(): void {
     // Formulaire principal pour les mouvements - FIXED VALIDATORS
@@ -996,7 +990,7 @@ export class StockMovementsComponent implements OnInit, OnDestroy {
               <span class="label">Type:</span> ${movement.typeMouvement}
             </div>
             <div class="detail-row">
-              <span class="label">Article:</span> ${movement.articleCode} - ${movement.articleNom || movement.articleDesignation}
+              <span class="label">Article:</span>  ${movement.articleNom || movement.articleDesignation}
             </div>
             <div class="detail-row">
               <span class="label">Quantité:</span> ${movement.quantite}
@@ -1290,12 +1284,6 @@ export class StockMovementsComponent implements OnInit, OnDestroy {
         return 'success';
       case TypeMouvement.SORTIE:
         return 'danger';
-      case TypeMouvement.TRANSFERT:
-        return 'primary';
-      case TypeMouvement.AJUSTEMENT:
-        return 'warning';
-      case TypeMouvement.INVENTAIRE:
-        return 'info';
       default:
         return 'secondary';
     }
@@ -1307,12 +1295,6 @@ export class StockMovementsComponent implements OnInit, OnDestroy {
         return 'fa-plus-circle';
       case TypeMouvement.SORTIE:
         return 'fa-minus-circle';
-      case TypeMouvement.TRANSFERT:
-        return 'fa-exchange-alt';
-      case TypeMouvement.AJUSTEMENT:
-        return 'fa-cog';
-      case TypeMouvement.INVENTAIRE:
-        return 'fa-boxes';
       default:
         return 'fa-question-circle';
     }
@@ -1368,4 +1350,4 @@ export class StockMovementsComponent implements OnInit, OnDestroy {
       this.onQuickFilterChange(target.value);
     }
   }
-}  
+}

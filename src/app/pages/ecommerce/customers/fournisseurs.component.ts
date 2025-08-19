@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 
 interface Fournisseur {
   id?: number;
-  code: string;
   nom: string;
   email: string;
   telephone: string;
@@ -96,7 +95,6 @@ export class FournisseursComponent implements OnInit {
 
   initForms() {
     this.formData = this.formBuilder.group({
-      code: ['', [Validators.required, Validators.minLength(2)]],
       nom: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       telephone: ['', [Validators.required]],

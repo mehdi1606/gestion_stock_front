@@ -5,29 +5,33 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { Router } from '@angular/router';
-
 interface Article {
   id?: number;
-  code: string;
-  designation: string;
+  nom: string;
   description?: string;
   categorie: string;
   unite: string;
   prixUnitaire: number;
   stockMin: number;
   stockMax: number;
-  stockActuel?: number;
-  fournisseurId?: number;
-  fournisseurNom?: string;
+
+  // Fixed stock field mapping to match backend DTO
+  quantiteActuelle?: number;  // This matches the backend ArticleDTO field
+  valeurStock?: number;
+  derniereEntree?: string;
+  derniereSortie?: string;
+
+  fournisseurPrincipalId?: number;     // This matches the backend
+  fournisseurPrincipalNom?: string;    // This matches the backend
   actif?: boolean;
   dateCreation?: string;
   dateModification?: string;
 }
 
+
 interface Fournisseur {
   id: number;
   nom: string;
-  code: string;
 }
 
 interface ApiResponse<T> {
@@ -124,15 +128,14 @@ export class ArticlesComponent implements OnInit {
 
   initForms() {
     this.formData = this.formBuilder.group({
-      code: ['', [Validators.required, Validators.minLength(2)]],
-      designation: ['', [Validators.required, Validators.minLength(2)]],
+      nom: ['', [Validators.required, Validators.minLength(2)]],
       description: [''],
       categorie: ['', [Validators.required]],
       unite: ['', [Validators.required]],
       prixUnitaire: [0, [Validators.required, Validators.min(0)]],
       stockMin: [0, [Validators.required, Validators.min(0)]],
       stockMax: [0, [Validators.required, Validators.min(0)]],
-      fournisseurId: [''],
+      fournisseurPrincipalId: [''],  // Fixed field name to match backend
       actif: [true]
     });
 
@@ -168,13 +171,25 @@ export class ArticlesComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+    console.log('Articles fetched:', this.articles);
   }
-
   async saveArticle() {
     this.submitted = true;
     if (this.formData.invalid) return;
 
-    const articleData: Article = this.formData.value;
+    // Map form data to match backend expected field names
+    const articleData: any = {
+      nom: this.formData.value.nom,
+      description: this.formData.value.description,
+      categorie: this.formData.value.categorie,
+      unite: this.formData.value.unite,
+      prixUnitaire: this.formData.value.prixUnitaire,
+      stockMin: this.formData.value.stockMin,
+      stockMax: this.formData.value.stockMax,
+      fournisseurPrincipalId: this.formData.value.fournisseurPrincipalId || null,  // Fixed field name
+      actif: this.formData.value.actif
+    };
+
     this.loading = true;
 
     try {
@@ -207,7 +222,6 @@ export class ArticlesComponent implements OnInit {
       this.loading = false;
     }
   }
-
   async deleteArticle(id: number) {
     const result = await Swal.fire({
       title: 'Êtes-vous sûr?',
@@ -255,7 +269,7 @@ export class ArticlesComponent implements OnInit {
   //         title: `<strong>${details.designation}</strong>`,
   //         html: `
   //           <div class="text-left">
-  //             <p><strong>Code:</strong> ${details.code}</p>
+  //             <p><strong>nom:</strong> ${details.nom}</p>
   //             <p><strong>Description:</strong> ${details.description || 'N/A'}</p>
   //             <p><strong>Catégorie:</strong> ${details.categorie}</p>
   //             <p><strong>Unité:</strong> ${details.unite}</p>
@@ -345,7 +359,8 @@ export class ArticlesComponent implements OnInit {
     }
 
     if (filters.fournisseur) {
-      filteredData = filteredData.filter(a => a.fournisseurId?.toString() === filters.fournisseur);
+      // Fixed to use the correct field name
+      filteredData = filteredData.filter(a => a.fournisseurPrincipalId?.toString() === filters.fournisseur);
     }
 
     if (filters.status !== '') {
@@ -360,7 +375,6 @@ export class ArticlesComponent implements OnInit {
 
     this.articles = filteredData;
   }
-
   async applyStockFilter(filterType: string) {
     this.loading = true;
     try {
@@ -411,7 +425,7 @@ export class ArticlesComponent implements OnInit {
         axios.get<ApiResponse<string[]>>(`${this.apiUrl}/categories`),
         axios.get<ApiResponse<Fournisseur[]>>(`${this.fournisseursUrl}/active`)
       ]);
-
+      console.log('Fournisseurs:', fournisseursResponse.data.data);
       if (categoriesResponse.data.success) {
         this.categories = categoriesResponse.data.data;
       }
@@ -475,19 +489,19 @@ export class ArticlesComponent implements OnInit {
   // ========================
 
   getStockStatus(article: Article): string {
-    const stock = article.stockActuel || 0;
+    const stock = article.quantiteActuelle || 0;  // Fixed field name
 
     if (stock === 0) return 'vide';
-    if (stock <= article.stockMin * 0.5) return 'critique';
-    if (stock <= article.stockMin) return 'faible';
-    if (stock >= article.stockMax) return 'excessif';
+    if (article.stockMin && stock <= article.stockMin * 0.5) return 'critique';
+    if (article.stockMin && stock <= article.stockMin) return 'faible';
+    if (article.stockMax && stock >= article.stockMax) return 'excessif';
     return 'normal';
   }
-
   getStockBadgeClass(article: Article): string {
     const status = this.getStockStatus(article);
-    return `bg-${this.stockColors[status]}`;
+    return `bg-${this.stockColors[status] || 'secondary'}`;
   }
+
 
   // ========================
   // PAGINATION
@@ -512,11 +526,11 @@ export class ArticlesComponent implements OnInit {
     Swal.fire('Erreur!', message, 'error');
   }
 
-  async checkCodeExists(code: string): Promise<boolean> {
-    if (!code) return false;
+  async checknomExists(nom: string): Promise<boolean> {
+    if (!nom) return false;
 
     try {
-      const response = await axios.get<ApiResponse<boolean>>(`${this.apiUrl}/exists/code/${code}`);
+      const response = await axios.get<ApiResponse<boolean>>(`${this.apiUrl}/exists/nom/${nom}`);
       return response.data.success ? response.data.data : false;
     } catch (error) {
       return false;
@@ -587,6 +601,7 @@ async openAddEditModal(article?: Article) {
     title: this.isEditMode ? 'Modifier l\'Article' : 'Nouvel Article',
     html: `
       <style>
+        /* Your existing styles... */
         .swal-form-container {
           text-align: left;
           max-height: 60vh;
@@ -738,6 +753,7 @@ async openAddEditModal(article?: Article) {
           border-radius: 20px;
           position: relative;
           cursor: pointer;
+          transition: background 0.3s ease;
         }
         .swal-switch-toggle.active {
           background: #10b981;
@@ -768,36 +784,6 @@ async openAddEditModal(article?: Article) {
           border-left: 3px solid #ef4444 !important;
           margin-top: 4px !important;
         }
-        .swal-custom-popup {
-          border-radius: 16px !important;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
-          border: none !important;
-        }
-        .swal-confirm-btn {
-          background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
-          border: none !important;
-          border-radius: 8px !important;
-          padding: 10px 20px !important;
-          font-weight: 600 !important;
-          font-size: 14px !important;
-          color: white !important;
-        }
-        .swal-confirm-btn:hover {
-          background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-          transform: translateY(-1px) !important;
-        }
-        .swal-cancel-btn {
-          background: #f3f4f6 !important;
-          border: 1px solid #d1d5db !important;
-          border-radius: 8px !important;
-          padding: 10px 20px !important;
-          font-weight: 600 !important;
-          font-size: 14px !important;
-          color: #374151 !important;
-        }
-        .swal-cancel-btn:hover {
-          background: #e5e7eb !important;
-        }
       </style>
       <div class="swal-form-container">
         <!-- Section: Informations Générales -->
@@ -808,20 +794,12 @@ async openAddEditModal(article?: Article) {
           </div>
           <div class="swal-form-grid">
             <div class="swal-form-group">
-              <label class="swal-form-label required">Code Article</label>
+              <label class="swal-form-label required">Nom Article</label>
               <div class="swal-input-wrapper">
-                <input type="text" id="code" class="swal-form-input" placeholder="Ex: ART001">
+                <input type="text" id="nom" class="swal-form-input" placeholder="Ex: ART001">
                 <i class="mdi mdi-barcode swal-input-icon"></i>
               </div>
-              <div id="code-error" class="swal-error-message" style="display: none;"></div>
-            </div>
-            <div class="swal-form-group">
-              <label class="swal-form-label required">Désignation</label>
-              <div class="swal-input-wrapper">
-                <input type="text" id="designation" class="swal-form-input" placeholder="Ex: Ordinateur portable">
-                <i class="mdi mdi-text swal-input-icon"></i>
-              </div>
-              <div id="designation-error" class="swal-error-message" style="display: none;"></div>
+              <div id="nom-error" class="swal-error-message" style="display: none;"></div>
             </div>
           </div>
           <div class="swal-form-group swal-full-width">
@@ -845,10 +823,8 @@ async openAddEditModal(article?: Article) {
               <div class="swal-select-wrapper">
                 <select id="categorie" class="swal-form-select">
                   <option value="">Sélectionner une catégorie</option>
-                  <option value="Electronique">Electronique</option>
-                  <option value="Informatique">Informatique</option>
-                  <option value="Mobilier">Mobilier</option>
-                  <option value="Fournitures">Fournitures</option>
+                  <option value="VOLAILLES">VOLAILLES</option>
+                  <option value="EMBALLAGES_ET_EPICES_ET_AUTRES">EMBALLAGES ET ÉPICES ET AUTRES</option>
                   ${this.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
                 </select>
                 <i class="mdi mdi-chevron-down swal-select-icon"></i>
@@ -908,7 +884,7 @@ async openAddEditModal(article?: Article) {
           </div>
         </div>
 
-        <!-- Section: Fournisseur et Statut -->
+        <!-- Section: Fournisseur et Statut - FIXED -->
         <div class="swal-form-section">
           <div class="swal-section-title">
             <i class="mdi mdi-account-group"></i>
@@ -918,7 +894,7 @@ async openAddEditModal(article?: Article) {
             <div class="swal-form-group">
               <label class="swal-form-label">Fournisseur</label>
               <div class="swal-select-wrapper">
-                <select id="fournisseurId" class="swal-form-select">
+                <select id="fournisseurPrincipalId" class="swal-form-select">
                   <option value="">Aucun fournisseur assigné</option>
                   ${this.fournisseurs.map(f => `<option value="${f.id}">${f.nom}</option>`).join('')}
                 </select>
@@ -931,7 +907,7 @@ async openAddEditModal(article?: Article) {
                 <div class="swal-switch-container">
                   <input type="checkbox" id="actif" class="swal-switch-input" checked>
                   <label for="actif" class="swal-switch-label">
-                    <div class="swal-switch-toggle">
+                    <div class="swal-switch-toggle active">
                       <div class="swal-switch-handle"></div>
                     </div>
                     <span class="swal-switch-text">Article actif</span>
@@ -965,7 +941,6 @@ async openAddEditModal(article?: Article) {
     await this.saveArticleFromSwal(formValues);
   }
 }
-
 // Enhanced view details with perfect styling
 async viewDetails(article: Article) {
   try {
@@ -977,7 +952,7 @@ async viewDetails(article: Article) {
       const stockColor = this.stockColors[stockStatus];
 
       Swal.fire({
-        title: `${details.designation}`,
+        title: `${details.nom}`,
         html: `
           <style>
             .swal-details-container {
@@ -1108,8 +1083,8 @@ async viewDetails(article: Article) {
                 </div>
                 <div class="swal-detail-content">
                   <div class="swal-detail-item">
-                    <span class="swal-detail-label">Code:</span>
-                    <span class="swal-detail-value highlight">${details.code}</span>
+                    <span class="swal-detail-label">nom:</span>
+                    <span class="swal-detail-value highlight">${details.nom}</span>
                   </div>
                   <div class="swal-detail-item">
                     <span class="swal-detail-label">Description:</span>
@@ -1140,7 +1115,7 @@ async viewDetails(article: Article) {
                   </div>
                   <div class="swal-detail-item">
                     <span class="swal-detail-label">Stock Actuel:</span>
-                    <span class="swal-detail-value ${stockColor}">${details.stockActuel || 0}</span>
+                    <span class="swal-detail-value ${stockColor}">${details.quantiteActuelle || 0}</span>
                   </div>
                   <div class="swal-detail-item">
                     <span class="swal-detail-label">Stock Min/Max:</span>
@@ -1163,7 +1138,7 @@ async viewDetails(article: Article) {
                 <div class="swal-detail-content">
                   <div class="swal-detail-item">
                     <span class="swal-detail-label">Fournisseur:</span>
-                    <span class="swal-detail-value">${details.fournisseurNom || 'Non assigné'}</span>
+                    <span class="swal-detail-value">${details.fournisseurPrincipalNom || 'Non assigné'}</span>
                   </div>
                   <div class="swal-detail-item">
                     <span class="swal-detail-label">Statut:</span>
@@ -1196,7 +1171,7 @@ async viewDetails(article: Article) {
 // ADD THESE NEW HELPER METHODS
 
 private setupFormValidation(): void {
-  const inputs = ['code', 'designation', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax'];
+  const inputs = ['nom', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax'];
 
   inputs.forEach(fieldName => {
     const element = document.getElementById(fieldName) as HTMLInputElement;
@@ -1217,7 +1192,6 @@ private setupFormValidation(): void {
     });
   }
 }
-
 private populateFormData(): void {
   if (this.isEditMode && this.formData.value) {
     Object.keys(this.formData.value).forEach(key => {
@@ -1236,7 +1210,6 @@ private populateFormData(): void {
     });
   }
 }
-
 private validateField(fieldName: string): boolean {
   const element = document.getElementById(fieldName) as HTMLInputElement;
   const errorElement = document.getElementById(`${fieldName}-error`) as HTMLElement;
@@ -1247,14 +1220,14 @@ private validateField(fieldName: string): boolean {
   let errorMessage = '';
 
   switch (fieldName) {
-    case 'code':
+    case 'nom':
     case 'designation':
       if (!element.value.trim()) {
         isValid = false;
-        errorMessage = `${fieldName === 'code' ? 'Le code' : 'La désignation'} est obligatoire.`;
+        errorMessage = `${fieldName === 'nom' ? 'Le nom' : 'La désignation'} est obligatoire.`;
       } else if (element.value.trim().length < 2) {
         isValid = false;
-        errorMessage = `${fieldName === 'code' ? 'Le code' : 'La désignation'} doit contenir au moins 2 caractères.`;
+        errorMessage = `${fieldName === 'nom' ? 'Le nom' : 'La désignation'} doit contenir au moins 2 caractères.`;
       }
       break;
 
@@ -1308,7 +1281,7 @@ private getFieldLabel(fieldName: string): string {
 }
 
 private validateAndGetFormData(): any {
-  const requiredFields = ['code', 'designation', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax'];
+  const requiredFields = ['nom', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax'];
   let isValid = true;
 
   // Validate all required fields
@@ -1325,7 +1298,9 @@ private validateAndGetFormData(): any {
 
   // Collect form data
   const formData: any = {};
-  ['code', 'designation', 'description', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax', 'fournisseurId'].forEach(field => {
+
+  // Get basic fields
+  ['nom', 'description', 'categorie', 'unite', 'prixUnitaire', 'stockMin', 'stockMax'].forEach(field => {
     const element = document.getElementById(field) as HTMLInputElement;
     if (element) {
       if (element.type === 'number') {
@@ -1336,12 +1311,19 @@ private validateAndGetFormData(): any {
     }
   });
 
+  // FIXED: Get supplier with correct field name
+  const fournisseurElement = document.getElementById('fournisseurPrincipalId') as HTMLInputElement;
+  if (fournisseurElement && fournisseurElement.value) {
+    formData.fournisseurPrincipalId = parseInt(fournisseurElement.value);
+  } else {
+    formData.fournisseurPrincipalId = null;
+  }
+
   const actifElement = document.getElementById('actif') as HTMLInputElement;
   formData.actif = actifElement ? actifElement.checked : true;
 
   return formData;
 }
-
 private async saveArticleFromSwal(formValues: any): Promise<void> {
   this.loading = true;
 

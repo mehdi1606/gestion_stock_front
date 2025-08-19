@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, Subject, interval, combineLatest } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged, switchMap, catchError, tap, startWith } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged, switchMap, catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 // ===============================
@@ -43,19 +43,21 @@ export interface StockDTO {
   ecartInventaire?: number;
   dateModification: string;
 
-  // Informations article enrichies
-  articleCode: string;
-  articleDesignation: string;
+  // Informations article enrichies - Updated to match API
+  articleNom: string;
+  articleDesignation?: string;
   articleCategorie?: string;
   articleUnite?: string;
   articleStockMin?: number;
   articleStockMax?: number;
 
-  // Statuts calculés
+  // Statuts calculés - From API
   stockFaible: boolean;
   stockCritique: boolean;
   stockExcessif: boolean;
   statutStock: 'NORMAL' | 'FAIBLE' | 'CRITIQUE' | 'EXCESSIF';
+  stockStatusColor: string;
+  rotationRate: number;
 }
 
 export interface SearchCriteriaDTO {
@@ -106,7 +108,9 @@ export interface PaginationState {
 // ===============================
 
 export class StockApiService {
-  constructor(private http: HttpClient, private baseUrl: string = 'http://localhost:8090/api/stocks') {}
+  constructor(private http: HttpClient, private baseUrl: string = '/api/stocks') {
+    console.log('StockApiService initialized with baseUrl:', this.baseUrl);
+  }
 
   getAllStocks(params: PaginationState): Observable<ApiResponse<PagedResponse<StockDTO>>> {
     let httpParams = new HttpParams()
@@ -115,11 +119,28 @@ export class StockApiService {
       .set('sortBy', params.sortBy)
       .set('sortDirection', params.sortDirection);
 
-    return this.http.get<ApiResponse<PagedResponse<StockDTO>>>(`${this.baseUrl}`, { params: httpParams });
+    console.log('Making API call to:', `${this.baseUrl}`, 'with params:', httpParams.toString());
+
+    return this.http.get<ApiResponse<PagedResponse<StockDTO>>>(`${this.baseUrl}`, { params: httpParams })
+      .pipe(
+        tap(response => console.log('API Response received:', response)),
+        catchError(error => {
+          console.error('API Error in getAllStocks:', error);
+          throw error;
+        })
+      );
   }
 
   searchStocks(criteria: SearchCriteriaDTO): Observable<ApiResponse<PagedResponse<StockDTO>>> {
-    return this.http.post<ApiResponse<PagedResponse<StockDTO>>>(`${this.baseUrl}/search`, criteria);
+    console.log('Searching stocks with criteria:', criteria);
+    return this.http.post<ApiResponse<PagedResponse<StockDTO>>>(`${this.baseUrl}/search`, criteria)
+      .pipe(
+        tap(response => console.log('Search response:', response)),
+        catchError(error => {
+          console.error('Search error:', error);
+          throw error;
+        })
+      );
   }
 
   searchStocksByText(query: string, page: number, size: number): Observable<ApiResponse<PagedResponse<StockDTO>>> {
@@ -128,31 +149,73 @@ export class StockApiService {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<ApiResponse<PagedResponse<StockDTO>>>(`${this.baseUrl}/search`, { params: httpParams });
+    return this.http.get<ApiResponse<PagedResponse<StockDTO>>>(`${this.baseUrl}/search`, { params: httpParams })
+      .pipe(
+        catchError(error => {
+          console.error('Text search error:', error);
+          throw error;
+        })
+      );
   }
 
   getCriticalStocks(): Observable<ApiResponse<StockDTO[]>> {
-    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/alerts/critical`);
+    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/alerts/critical`)
+      .pipe(
+        catchError(error => {
+          console.error('Critical stocks error:', error);
+          return of({ success: false, data: [], message: error.message } as any);
+        })
+      );
   }
 
   getLowStocks(): Observable<ApiResponse<StockDTO[]>> {
-    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/alerts/low`);
+    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/alerts/low`)
+      .pipe(
+        catchError(error => {
+          console.error('Low stocks error:', error);
+          return of({ success: false, data: [], message: error.message } as any);
+        })
+      );
   }
 
   getEmptyStocks(): Observable<ApiResponse<StockDTO[]>> {
-    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/alerts/empty`);
+    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/alerts/empty`)
+      .pipe(
+        catchError(error => {
+          console.error('Empty stocks error:', error);
+          return of({ success: false, data: [], message: error.message } as any);
+        })
+      );
   }
 
   getStocksByCategory(category: string): Observable<ApiResponse<StockDTO[]>> {
-    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/filter/category/${encodeURIComponent(category)}`);
+    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/filter/category/${encodeURIComponent(category)}`)
+      .pipe(
+        catchError(error => {
+          console.error('Category filter error:', error);
+          throw error;
+        })
+      );
   }
 
   getStocksBySupplier(supplierId: number): Observable<ApiResponse<StockDTO[]>> {
-    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/filter/supplier/${supplierId}`);
+    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/filter/supplier/${supplierId}`)
+      .pipe(
+        catchError(error => {
+          console.error('Supplier filter error:', error);
+          throw error;
+        })
+      );
   }
 
   getInconsistentStocks(): Observable<ApiResponse<StockDTO[]>> {
-    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/maintenance/inconsistent`);
+    return this.http.get<ApiResponse<StockDTO[]>>(`${this.baseUrl}/maintenance/inconsistent`)
+      .pipe(
+        catchError(error => {
+          console.error('Inconsistent stocks error:', error);
+          throw error;
+        })
+      );
   }
 }
 
@@ -173,9 +236,9 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   // ===============================
 
   @Input() apiBaseUrl: string = 'http://localhost:8090/api/stocks';
-  @Input() autoRefreshInterval: number = 30000; // 30 secondes
+  @Input() autoRefreshInterval: number = 30000;
   @Input() enableAutoRefresh: boolean = true;
-  @Input() pageSize: number = 20;
+  @Input() pageSize: number = 10;
   @Input() showAdvancedFilters: boolean = true;
   @Input() enableExport: boolean = true;
   @Input() enableBulkActions: boolean = true;
@@ -223,15 +286,13 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   ];
 
   sortableColumns = [
-    { key: 'articleCode', label: 'Code Article' },
-    { key: 'articleDesignation', label: 'Désignation' },
+    { key: 'articleNom', label: 'Nom Article' },
     { key: 'quantiteActuelle', label: 'Quantité' },
     { key: 'valeurStock', label: 'Valeur' },
     { key: 'dateModification', label: 'Dernière MAJ' }
   ];
 
-  // Pagination
-  pageSizeOptions = [10, 20, 50, 100];
+  pageSizeOptions = [5, 10, 20, 50];
 
   // ===============================
   // SUJETS RXJS PRIVÉS
@@ -250,7 +311,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   private paginationState$ = new BehaviorSubject<PaginationState>({
     page: 0,
     size: this.pageSize,
-    sortBy: 'articleDesignation',
+    sortBy: 'articleNom',
     sortDirection: 'ASC'
   });
 
@@ -259,7 +320,6 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   // ===============================
 
   private apiService: StockApiService;
-  private autoRefreshSubscription: any;
 
   // ===============================
   // GETTERS PUBLICS
@@ -302,7 +362,6 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
     const currentPage = this.currentPaginationState.page;
     const totalPages = this.totalPages;
 
-    // Logique de pagination avec ellipses
     const startPage = Math.max(0, currentPage - 2);
     const endPage = Math.min(totalPages - 1, currentPage + 2);
 
@@ -321,10 +380,11 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) {
-    this.apiService = new StockApiService(this.http, this.apiBaseUrl);
+    console.log('StockInventoryComponent constructor called');
   }
 
   ngOnInit(): void {
+    console.log('StockInventoryComponent ngOnInit');
     this.initializeComponent();
     this.setupDataStreams();
     this.setupAutoRefresh();
@@ -334,9 +394,6 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.autoRefreshSubscription) {
-      this.autoRefreshSubscription.unsubscribe();
-    }
   }
 
   // ===============================
@@ -344,6 +401,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   // ===============================
 
   private initializeComponent(): void {
+    console.log('Initializing component with baseUrl:', this.apiBaseUrl);
     this.apiService = new StockApiService(this.http, this.apiBaseUrl);
     this.paginationState$.next({
       ...this.paginationState$.value,
@@ -352,7 +410,8 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   private setupDataStreams(): void {
-    // Stream principal pour les données
+    console.log('Setting up data streams');
+
     const dataStream$ = combineLatest([
       this.paginationState$,
       this.filterState$,
@@ -360,17 +419,26 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
     ]).pipe(
       debounceTime(100),
       distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
-      tap(() => this.loading = true),
+      tap(() => {
+        console.log('Loading data...');
+        this.loading = true;
+        this.cdr.markForCheck();
+      }),
       switchMap(([pagination, filters]) => this.loadStockData(pagination, filters)),
       takeUntil(this.destroy$)
     );
 
     dataStream$.subscribe({
-      next: (response) => this.handleDataResponse(response),
-      error: (error) => this.handleError(error)
+      next: (response) => {
+        console.log('Data stream response:', response);
+        this.handleDataResponse(response);
+      },
+      error: (error) => {
+        console.error('Data stream error:', error);
+        this.handleError(error);
+      }
     });
 
-    // Stream pour la recherche textuelle
     this.searchTerms$.pipe(
       debounceTime(500),
       distinctUntilChanged(),
@@ -382,9 +450,10 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
 
   private setupAutoRefresh(): void {
     if (this.enableAutoRefresh && this.autoRefreshInterval > 0) {
-      this.autoRefreshSubscription = interval(this.autoRefreshInterval)
+      interval(this.autoRefreshInterval)
         .pipe(takeUntil(this.destroy$))
         .subscribe(() => {
+          console.log('Auto-refreshing data');
           this.refreshData();
           this.loadAlerts();
         });
@@ -392,6 +461,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   private loadInitialData(): void {
+    console.log('Loading initial data');
     this.loadAlerts();
     this.refresh$.next();
   }
@@ -401,6 +471,8 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   // ===============================
 
   private loadStockData(pagination: PaginationState, filters: FilterState): Observable<ApiResponse<PagedResponse<StockDTO>> | ApiResponse<StockDTO[]>> {
+    console.log('Loading stock data with:', { pagination, filters });
+
     if (filters.searchTerm.trim()) {
       return this.apiService.searchStocksByText(filters.searchTerm, pagination.page, pagination.size);
     }
@@ -425,33 +497,45 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   private handleDataResponse(response: ApiResponse<PagedResponse<StockDTO>> | ApiResponse<StockDTO[]>): void {
+    console.log('Handling data response:', response);
+
     this.loading = false;
     this.error = null;
     this.lastUpdate = new Date();
 
-    if (response.success) {
-      if ('content' in response.data) {
-        // Réponse paginée
+    if (response && response.success) {
+      if (response.data && 'content' in response.data) {
         const pagedData = response.data as PagedResponse<StockDTO>;
-        this.stocks = pagedData.content;
-        this.totalElements = pagedData.totalElements;
-        this.totalPages = pagedData.totalPages;
+        this.stocks = pagedData.content || [];
+        this.totalElements = pagedData.totalElements || 0;
+        this.totalPages = pagedData.totalPages || 1;
+        console.log('Loaded paginated data:', {
+          stocks: this.stocks.length,
+          totalElements: this.totalElements,
+          totalPages: this.totalPages
+        });
       } else {
-        // Réponse simple (array)
-        const arrayData = response.data as StockDTO[];
+        const arrayData = (response.data as StockDTO[]) || [];
         this.stocks = arrayData;
         this.totalElements = arrayData.length;
         this.totalPages = 1;
+        console.log('Loaded array data:', { stocks: this.stocks.length });
       }
       this.calculateStatistics();
     } else {
-      this.error = response.message || 'Erreur lors du chargement des données';
+      this.error = response?.message || 'Erreur lors du chargement des données';
+      this.stocks = [];
+      this.totalElements = 0;
+      this.totalPages = 0;
+      console.error('Data response error:', this.error);
     }
 
     this.cdr.markForCheck();
   }
 
   private loadAlerts(): void {
+    console.log('Loading alerts');
+
     const alertsStreams$ = combineLatest([
       this.apiService.getCriticalStocks().pipe(catchError(() => of({ success: false, data: [] } as any))),
       this.apiService.getLowStocks().pipe(catchError(() => of({ success: false, data: [] } as any))),
@@ -472,18 +556,29 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   private calculateStatistics(): void {
     this.statistics = {
       totalStocks: this.totalElements,
-      totalValue: this.stocks.reduce((sum, stock) => sum + stock.valeurStock, 0),
-      criticalCount: this.alerts.critical.length,
-      lowCount: this.alerts.low.length,
-      emptyCount: this.alerts.empty.length,
-      normalCount: this.totalElements - this.alerts.critical.length - this.alerts.low.length - this.alerts.empty.length
+      totalValue: this.stocks.reduce((sum, stock) => sum + (stock.valeurStock || 0), 0),
+      criticalCount: this.stocks.filter(s => s.stockCritique).length,
+      lowCount: this.stocks.filter(s => s.stockFaible).length,
+      emptyCount: this.stocks.filter(s => s.quantiteActuelle === 0).length,
+      normalCount: this.stocks.filter(s => s.statutStock === 'NORMAL').length
     };
+    console.log('Updated statistics:', this.statistics);
   }
 
   private handleError(error: any): void {
     this.loading = false;
-    this.error = error.message || 'Une erreur est survenue';
-    console.error('Erreur StockInventory:', error);
+    this.error = error.message || 'Une erreur est survenue lors du chargement des données';
+    console.error('StockInventory Error:', error);
+
+    // Show user-friendly error messages
+    if (error.status === 0) {
+      this.error = 'Impossible de se connecter au serveur. Vérifiez votre connexion.';
+    } else if (error.status === 404) {
+      this.error = 'Service non trouvé. Vérifiez l\'URL de l\'API.';
+    } else if (error.status === 500) {
+      this.error = 'Erreur interne du serveur.';
+    }
+
     this.cdr.markForCheck();
   }
 
@@ -493,17 +588,20 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
 
   onPageChange(page: number): void {
     if (page >= 0 && page < this.totalPages) {
+      console.log('Changing to page:', page);
       this.updatePaginationState({ page });
     }
   }
 
   onPageSizeChange(size: number): void {
+    console.log('Changing page size to:', size);
     this.updatePaginationState({ page: 0, size });
   }
 
   onSort(column: string): void {
     const currentState = this.currentPaginationState;
     const direction = currentState.sortBy === column && currentState.sortDirection === 'ASC' ? 'DESC' : 'ASC';
+    console.log('Sorting by:', column, direction);
 
     this.updatePaginationState({
       page: 0,
@@ -517,10 +615,12 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   // ===============================
 
   onSearchChange(term: string): void {
+    console.log('Search term changed:', term);
     this.searchTerms$.next(term);
   }
 
   onCategoryFilter(category: string): void {
+    console.log('Category filter:', category);
     this.updateFilterState({
       selectedCategory: category,
       showCriticalOnly: false,
@@ -530,6 +630,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   onCriticalFilter(): void {
+    console.log('Critical filter toggled');
     this.updateFilterState({
       showCriticalOnly: !this.currentFilterState.showCriticalOnly,
       showLowOnly: false,
@@ -539,6 +640,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   onLowStockFilter(): void {
+    console.log('Low stock filter toggled');
     this.updateFilterState({
       showLowOnly: !this.currentFilterState.showLowOnly,
       showCriticalOnly: false,
@@ -548,6 +650,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   onEmptyStockFilter(): void {
+    console.log('Empty stock filter toggled');
     this.updateFilterState({
       showEmptyOnly: !this.currentFilterState.showEmptyOnly,
       showCriticalOnly: false,
@@ -557,6 +660,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   onResetFilters(): void {
+    console.log('Resetting filters');
     this.searchTerms$.next('');
     this.updateFilterState({
       searchTerm: '',
@@ -573,14 +677,17 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   // ===============================
 
   onStockSelect(stock: StockDTO): void {
+    console.log('Stock selected:', stock);
     this.stockSelected.emit(stock);
   }
 
   onStockEdit(stockId: number): void {
+    console.log('Edit stock:', stockId);
     this.stockEdit.emit(stockId);
   }
 
   onStockView(stock: StockDTO): void {
+    console.log('View stock:', stock);
     this.stockView.emit(stock);
   }
 
@@ -590,6 +697,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
     } else {
       this.selectedStocks.add(stockId);
     }
+    console.log('Selected stocks:', Array.from(this.selectedStocks));
   }
 
   onSelectAllRows(): void {
@@ -599,6 +707,7 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
       this.selectedStocks.clear();
       this.stocks.forEach(stock => this.selectedStocks.add(stock.id));
     }
+    console.log('Select all toggled. Selected:', Array.from(this.selectedStocks));
   }
 
   onToggleExpandRow(stockId: number): void {
@@ -610,21 +719,24 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   }
 
   onViewChange(newView: 'table' | 'cards' | 'grid'): void {
+    console.log('View changed to:', newView);
     this.view = newView;
   }
 
   onRefresh(): void {
+    console.log('Manual refresh triggered');
     this.refreshData();
     this.loadAlerts();
   }
 
   onExport(): void {
-    // TODO: Implémenter l'export
-    console.log('Export en cours...');
+    console.log('Export requested');
+    // TODO: Implement export functionality
   }
 
   onBulkAction(action: string): void {
     const selectedStockData = this.stocks.filter(stock => this.selectedStocks.has(stock.id));
+    console.log('Bulk action:', action, selectedStockData);
     this.bulkAction.emit({ action, stocks: selectedStockData });
   }
 
@@ -679,11 +791,19 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  getDisplayName(stock: StockDTO): string {
+    return stock.articleNom || stock.articleDesignation || `Article ${stock.articleId}`;
+  }
+
+  getArticleCode(stock: StockDTO): string {
+    return `ART-${stock.articleId}`;
+  }
+
   formatCurrency(value: number): string {
     return new Intl.NumberFormat('fr-MA', {
       style: 'currency',
       currency: 'MAD'
-    }).format(value);
+    }).format(value || 0);
   }
 
   formatDate(date: string | Date): string {
@@ -713,5 +833,19 @@ export class StockInventoryComponent implements OnInit, OnDestroy {
   private updatePaginationState(partial: Partial<PaginationState>): void {
     const current = this.paginationState$.value;
     this.paginationState$.next({ ...current, ...partial });
+  }
+
+  // ===============================
+  // MÉTHODES DE DEBUG
+  // ===============================
+
+  debugApiCall(): void {
+    console.log('=== DEBUG INFO ===');
+    console.log('API Base URL:', this.apiBaseUrl);
+    console.log('Current pagination state:', this.currentPaginationState);
+    console.log('Current filter state:', this.currentFilterState);
+    console.log('Stocks count:', this.stocks.length);
+    console.log('Total elements:', this.totalElements);
+    console.log('================');
   }
 }

@@ -184,13 +184,12 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Code</th>
               <th>Nom</th>
               <th>Email</th>
               <th>Téléphone</th>
               <th>Ville</th>
               <th>Pays</th>
-              <th>Délai</th>
+              <!-- <th>Délai</th> -->
               <th>Statut</th>
               <th>Actions</th>
             </tr>
@@ -198,9 +197,6 @@
           <tbody>
             <tr *ngFor="let fournisseur of fournisseurs; let i = index">
               <td>{{ (currentPage * pageSize) + i + 1 }}</td>
-              <td>
-                <span class="badge bg-primary">{{ fournisseur.code }}</span>
-              </td>
               <td>
                 <div class="d-flex align-items-center">
                   <div class="avatar me-2">
@@ -216,14 +212,14 @@
                 {{ fournisseur.ville }}
               </td>
               <td>{{ fournisseur.pays }}</td>
-              <td>
+              <!-- <td>
                 <span class="badge"
                       [class.bg-success]="(fournisseur.delaiLivraison || 0) <= 7"
                       [class.bg-warning]="(fournisseur.delaiLivraison || 0) > 7 && (fournisseur.delaiLivraison || 0) <= 15"
                       [class.bg-danger]="(fournisseur.delaiLivraison || 0) > 15">
                   {{ fournisseur.delaiLivraison || 0 }} jour(s)
                 </span>
-              </td>
+              </td> -->
               <td>
                 <span class="badge"
                       [class.bg-success]="fournisseur.actif"
@@ -335,7 +331,7 @@
     <form [formGroup]="formData" (ngSubmit)="saveFournisseur()">
       <div class="row">
         <!-- Code and Name -->
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
           <div class="mb-3">
             <label for="code" class="form-label required">Code Fournisseur</label>
             <input
@@ -351,7 +347,7 @@
               <span *ngIf="form['code'].errors?.['minlength']">Le code doit contenir au moins 2 caractères.</span>
             </div>
           </div>
-        </div>
+        </div> -->
 
         <div class="col-md-6">
           <div class="mb-3">
@@ -476,8 +472,8 @@
         </div>
       </div>
 
-      <div class="row">
-        <!-- Payment Terms and Delivery Time -->
+  <div class="row">
+<!--
         <div class="col-md-6">
           <div class="mb-3">
             <label for="conditionsPaiement" class="form-label">Conditions de Paiement</label>
@@ -507,7 +503,7 @@
               Le délai ne peut pas être négatif.
             </div>
           </div>
-        </div>
+        </div>-->
       </div>
 
       <!-- Status -->
