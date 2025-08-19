@@ -839,9 +839,8 @@ async openAddEditModal(article?: Article) {
                   <option value="Pièce">Pièce</option>
                   <option value="Kg">Kilogramme</option>
                   <option value="Litre">Litre</option>
-                  <option value="Mètre">Mètre</option>
-                  <option value="Boîte">Boîte</option>
-                  <option value="Carton">Carton</option>
+                  <option value="Gramme">Mètre</option>
+
                 </select>
                 <i class="mdi mdi-chevron-down swal-select-icon"></i>
               </div>
